@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">MVVMArchitectureStudy2</string>
+
+    <string name="toast_success">데이터 불러오기 성공</string>
+    <string name="toast_no_data">데이터 없음</string>
+    <string name="toast_error">오류 발생</string>
+    <string name="toast_network_disconnect">네트워크 연결 실패</string>
+    <string name="toast_no_search">검색어를 입력해주세요.</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

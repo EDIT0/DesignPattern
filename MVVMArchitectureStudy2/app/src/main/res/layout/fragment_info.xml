@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:binding="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".presentation.ui.fragment.InfoFragment">
+
+    <data>
+
+        <variable
+            name="movieDetail"
+            type="com.example.mvvmarchitecturestudy2.data.model.MovieDetailModel" />
+    </data>
+
+    <com.example.mvvmarchitecturestudy2.data.util.BottomFadingEdgeScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fadingEdgeLength="80dp"
+        android:overScrollMode="never"
+        android:requiresFadingEdge="vertical"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:adjustViewBounds="true"
+                binding:setUrlImage="@{movieDetail.belongsToCollection.backdropPath}" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginBottom="5dp"
+                android:text="안녕하세요\nHello\n안녕하세요\nHello\n안녕하세요\nHello\n안녕하세요\nHello\n안녕하세요\nHello\n안녕하세요\nHello\n안녕하세요\nHello\n안녕하세요\nHello\n안녕하세요\nHello\n안녕하세요\nHello\n안녕하세요\nHello\n안녕하세요\nHello\n"
+                android:textSize="20sp" />
+
+<!--            android:text="@{movieDetail.title}"-->
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginBottom="5dp"
+                android:text="@{movieDetail.releaseDate}"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginBottom="5dp"
+                android:text="@{`Adult: ` + String.valueOf(movieDetail.adult)}"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginBottom="5dp"
+                android:text="@{String.valueOf(movieDetail.overview)}"
+                android:textSize="18sp" />
+
+        </LinearLayout>
+
+    </com.example.mvvmarchitecturestudy2.data.util.BottomFadingEdgeScrollView>
+
+
+</layout>
