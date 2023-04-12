@@ -1,6 +1,7 @@
 package com.example.mvvmarchitecturestudy.presentation.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -38,15 +39,15 @@ class MovieAdapter : ListAdapter<MovieModelResult, MovieAdapter.ViewHolder>(diff
 
             binding.root.setOnClickListener {
                 onItemClickListener?.let {
-                    it(adapterPosition, popularMovieModelResult)
+                    it(binding, adapterPosition, popularMovieModelResult)
                 }
             }
         }
     }
 
-    private var onItemClickListener : ((Int, MovieModelResult) -> String) ?= null
+    private var onItemClickListener : ((MovieListItemBinding, Int, MovieModelResult) -> String) ?= null
 
-    fun setOnItemClickListener(listener : (Int, MovieModelResult) -> String) {
+    fun setOnItemClickListener(listener : (MovieListItemBinding, Int, MovieModelResult) -> String) {
         onItemClickListener = listener
     }
 

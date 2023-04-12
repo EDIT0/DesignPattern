@@ -1,14 +1,16 @@
 package com.example.mvvmarchitecturestudy.presentation.ui.fragment
 
-import android.annotation.TargetApi
-import android.app.Activity.RESULT_OK
-import android.content.Context
+import android.app.ActivityOptions
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.core.app.ActivityOptionsCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -18,18 +20,8 @@ import com.example.mvvmarchitecturestudy.databinding.FragmentMovieListBinding
 import com.example.mvvmarchitecturestudy.presentation.adapter.MovieAdapter
 import com.example.mvvmarchitecturestudy.presentation.ui.activity.MainActivity
 import com.example.mvvmarchitecturestudy.presentation.ui.activity.MainActivity.Companion.TAG
-import com.example.mvvmarchitecturestudy.presentation.viewmodel.MainViewModel
-import android.content.Intent
-import android.os.Build
-import android.widget.Toast
-import androidx.activity.result.ActivityResult
-
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.ActivityResultCallback
-
-import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
-import androidx.annotation.RequiresApi
 import com.example.mvvmarchitecturestudy.presentation.ui.activity.MovieInfoActivity
+import com.example.mvvmarchitecturestudy.presentation.viewmodel.MainViewModel
 
 
 class MovieListFragment : Fragment() {
@@ -77,15 +69,36 @@ class MovieListFragment : Fragment() {
             addOnScrollListener(this@MovieListFragment.onScrollListener)
         }
 
-        movieAdapter.setOnItemClickListener { adapterPosition, it ->
+        movieAdapter.setOnItemClickListener { view, adapterPosition, it ->
+//            val intent = Intent(requireActivity(), MovieInfoActivity::class.java)
+////            val bundle = Bundle().apply {
+////                putSerializable("MovieInfo", it)
+////            }
+//            Log.i(MainActivity.TAG + CLASS_NAME, "${adapterPosition} ${it}")
+//            intent.putExtra("MovieInfo", it)
+////            resultLauncher?.launch(intent)
+//            requireActivity().startActivity(intent)
+
+
+            // Check if we're running on Android 5.0 or higher
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                // Apply activity transition
+            } else {
+                // Swap without transition
+            }
+
             val intent = Intent(requireActivity(), MovieInfoActivity::class.java)
-//            val bundle = Bundle().apply {
-//                putSerializable("MovieInfo", it)
-//            }
-            Log.i(MainActivity.TAG + CLASS_NAME, "${adapterPosition} ${it}")
             intent.putExtra("MovieInfo", it)
-//            resultLauncher?.launch(intent)
-            requireActivity().startActivity(intent)
+//            val thumbView: View = view.findViewById(R.id.iv_thumbnail)
+//            val pair_thumb: androidx.core.util.Pair<View, String> = androidx.core.util.Pair.create(thumbView, thumbView.transitionName)
+//            val optionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(requireActivity(), pair_thumb)
+            val options : ActivityOptions = ActivityOptions.makeSceneTransitionAnimation(
+                requireActivity(),
+                android.util.Pair.create(view.ivThumbnail, "thumbnailTransition"),
+                android.util.Pair.create(view.tvTitle, "titleTransition"),
+//                        android.util.Pair.create(sounddoodleListItemBinding.txtName, "nickname")
+            )
+            requireActivity().startActivity(intent, options.toBundle())
 
             ""
         }

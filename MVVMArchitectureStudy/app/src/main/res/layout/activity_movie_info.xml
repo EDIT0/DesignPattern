@@ -40,8 +40,9 @@
             <ImageView
                 android:id="@+id/iv_thumbnail"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="300dp"
                 android:adjustViewBounds="true"
+                android:transitionName="thumbnailTransition"
                 app:layout_constraintBottom_toTopOf="@+id/tv_movieInfo"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -58,6 +59,7 @@
                 android:layout_marginBottom="10dp"
                 android:paddingHorizontal="20dp"
                 android:textColor="#000000"
+                android:transitionName="titleTransition"
                 android:textSize="16sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
