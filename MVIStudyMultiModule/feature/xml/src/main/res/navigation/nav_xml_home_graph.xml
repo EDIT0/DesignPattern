@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_xml_home_graph"
+    app:startDestination="@id/xmlMainHomeFragment">
+
+    <fragment
+        android:id="@+id/xmlMainHomeFragment"
+        android:name="com.my.mvistudymultimodule.feature.xml.view.fragment.XmlMainHomeFragment"
+        android:label="fragment_xml_main_home"
+        tools:layout="@layout/fragment_xml_main_home" >
+        <action
+            android:id="@+id/action_xmlMainHomeFragment_to_xmlMovieDetailFragment"
+            app:destination="@id/xmlMovieDetailFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/xmlMovieDetailFragment"
+        android:name="com.my.mvistudymultimodule.feature.xml.view.fragment.XmlMovieDetailFragment"
+        android:label="XmlMovieDetailFragment" />
+
+</navigation>

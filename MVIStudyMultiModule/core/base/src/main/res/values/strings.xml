@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 대분류 메뉴 -->
+    <string name="home_menu_xml">XML</string>
+    <string name="home_menu_compose">Compose</string>
+
+</resources>
