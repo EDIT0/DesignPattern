@@ -6,7 +6,7 @@ import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.app.ActivityOptionsCompat
 import com.my.mvistudymultimodule.core.base.ActivityNavigator
-import com.my.mvistudymultimodule.feature.xml.view.activity.XmlHomeActivity
+import com.my.mvistudymultimodule.feature.xml.home.view.XmlHomeActivity
 
 /**
  * Activity 전환

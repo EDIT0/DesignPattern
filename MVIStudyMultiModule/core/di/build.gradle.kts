@@ -1,6 +1,18 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
+
+    id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
+}
+
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        load(localPropertiesFile.inputStream())
+    }
 }
 
 android {
@@ -12,6 +24,10 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+
+        buildConfigField("String", "API_KEY", "${localProperties["MY_KEY"]}")
+        buildConfigField("String", "BASE_URL", "${localProperties["MY_URL"]}")
+        buildConfigField("String", "BASE_MOVIE_POSTER", "${localProperties["BASE_MOVIE_POSTER"]}")
     }
 
     buildTypes {
@@ -30,9 +46,24 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
+
+    /* Module */
+    implementation(project(":data"))
+    implementation(project(":domain"))
+
+    /* Hilt */
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
+
+    /* Retrofit */
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

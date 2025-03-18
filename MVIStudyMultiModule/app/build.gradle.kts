@@ -48,6 +48,8 @@ dependencies {
     implementation(project(":core:di"))
     implementation(project(":core:model"))
     implementation(project(":core:util"))
+    implementation(project(":data"))
+    implementation(project(":domain"))
     implementation(project(":feature:home"))
     implementation(project(":feature:xml"))
     implementation(project(":feature:compose"))
@@ -62,6 +64,10 @@ dependencies {
     /* Navigation */
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
+
+    /* Retrofit */
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

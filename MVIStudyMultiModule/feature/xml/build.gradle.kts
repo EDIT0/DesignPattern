@@ -45,6 +45,7 @@ dependencies {
     implementation(project(":core:di"))
     implementation(project(":core:model"))
     implementation(project(":core:util"))
+    implementation(project(":domain"))
 
     /* Hilt */
     implementation(libs.hilt.android)

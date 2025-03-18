@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/xmlMainHomeFragment"
-        android:name="com.my.mvistudymultimodule.feature.xml.view.fragment.XmlMainHomeFragment"
+        android:name="com.my.mvistudymultimodule.feature.xml.mainhome.view.XmlMainHomeFragment"
         android:label="fragment_xml_main_home"
         tools:layout="@layout/fragment_xml_main_home" >
         <action
@@ -16,7 +16,7 @@
     </fragment>
     <fragment
         android:id="@+id/xmlMovieDetailFragment"
-        android:name="com.my.mvistudymultimodule.feature.xml.view.fragment.XmlMovieDetailFragment"
+        android:name="com.my.mvistudymultimodule.feature.xml.moviedetail.view.XmlMovieDetailFragment"
         android:label="XmlMovieDetailFragment" />
 
 </navigation>
