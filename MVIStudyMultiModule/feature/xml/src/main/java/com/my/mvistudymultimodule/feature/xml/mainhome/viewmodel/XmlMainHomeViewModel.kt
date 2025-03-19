@@ -9,6 +9,7 @@ import com.my.mvistudymultimodule.core.base.RequestResult
 import com.my.mvistudymultimodule.core.model.MovieModel
 import com.my.mvistudymultimodule.core.util.LogUtil
 import com.my.mvistudymultimodule.domain.usecase.GetPopularMovieUseCase
+import com.my.mvistudymultimodule.domain.usecase.GetSearchMovieUseCase
 import com.my.mvistudymultimodule.feature.xml.mainhome.event.MovieListErrorUiEvent
 import com.my.mvistudymultimodule.feature.xml.mainhome.event.MovieListUiEvent
 import com.my.mvistudymultimodule.feature.xml.mainhome.event.XmlMainHomeViewModelEvent
@@ -72,6 +73,7 @@ class XmlMainHomeViewModel @Inject constructor(
     }
 
     private fun getPopularMovie() {
+        scopeJob?.cancel()
         scopeJob = scope.launch {
             getPopularMovieUseCase.invoke(language, page)
                 .onStart {

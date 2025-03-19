@@ -12,12 +12,12 @@ import javax.inject.Inject
 class MovieRepositoryImpl @Inject constructor(
     private val movieRemoteDataSource: MovieRemoteDataSource,
 ): MovieRepository {
-    override suspend fun getPopularMovies(
+    override suspend fun getPopularMovie(
         language: String,
         page: Int
     ): Flow<RequestResult<MovieModel>> {
         return flow<RequestResult<MovieModel>> {
-            val response = movieRemoteDataSource.getPopularMovies(language, page)
+            val response = movieRemoteDataSource.getPopularMovie(language, page)
 
             if(response.isSuccessful) {
                 if(response.body()?.movieModelResults?.isEmpty() == true) {
@@ -35,11 +35,27 @@ class MovieRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getSearchMovies(
+    override suspend fun getSearchMovie(
         query: String,
         language: String,
         page: Int
     ): Flow<RequestResult<MovieModel>> {
-        TODO("Not yet implemented")
+        return flow<RequestResult<MovieModel>> {
+            val response = movieRemoteDataSource.getSearchMovie(query, language, page)
+
+            if(response.isSuccessful) {
+                if(response.body()?.movieModelResults?.isEmpty() == true) {
+                    emit(RequestResult.DataEmpty())
+                } else {
+                    response.body()?.let {
+                        emit(RequestResult.Success(it))
+                    }
+                }
+            } else {
+                emit(RequestResult.Error("ERROR", "error message"))
+            }
+        }.catch {
+            throw Exception(it)
+        }
     }
 }

@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <string name="common_network_connection_false">네트워크 연결을 확인해주세요</string>
+    <string name="common_list_empty">데이터가 없습니다</string>
+
     <!-- 대분류 메뉴 -->
     <string name="home_menu_xml">XML</string>
     <string name="home_menu_compose">Compose</string>
+
+    <!-- MainHome -->
+    <string name="main_home_movie_search">영화 검색</string>
 
 </resources>

@@ -20,6 +20,7 @@
             android:text="@string/home_menu_xml"
             android:textAllCaps="false"
             android:textSize="20sp"
+            android:transitionName="btnXMLToXmlHome"
             app:layout_constraintBottom_toTopOf="@id/btnCompose"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

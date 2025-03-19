@@ -54,6 +54,7 @@ android {
 dependencies {
 
     /* Module */
+    implementation(project(":core:util"))
     implementation(project(":data"))
     implementation(project(":domain"))
 
@@ -64,6 +65,9 @@ dependencies {
     /* Retrofit */
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
+
+    /* Okhttp Interceptor */
+    implementation(libs.logging.interceptor)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
