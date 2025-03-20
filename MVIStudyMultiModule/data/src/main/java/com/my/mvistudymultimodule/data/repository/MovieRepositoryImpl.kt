@@ -1,5 +1,6 @@
 package com.my.mvistudymultimodule.data.repository
 
+import androidx.paging.PagingData
 import com.my.mvistudymultimodule.core.base.RequestResult
 import com.my.mvistudymultimodule.core.model.MovieModel
 import com.my.mvistudymultimodule.data.repository.remote.MovieRemoteDataSource
@@ -33,6 +34,12 @@ class MovieRepositoryImpl @Inject constructor(
         }.catch {
             throw Exception(it)
         }
+    }
+
+    override suspend fun getPopularMoviePaging(
+        language: String
+    ): Flow<PagingData<MovieModel.MovieModelResult>> {
+        return movieRemoteDataSource.getPopularMoviePaging(language)
     }
 
     override suspend fun getSearchMovie(

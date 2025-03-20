@@ -1,5 +1,6 @@
 package com.my.mvistudymultimodule.domain.usecase
 
+import androidx.paging.PagingData
 import com.my.mvistudymultimodule.core.base.RequestResult
 import com.my.mvistudymultimodule.core.model.MovieModel
 import com.my.mvistudymultimodule.domain.repository.MovieRepository
@@ -11,5 +12,9 @@ class GetPopularMovieUseCase @Inject constructor(
 ) {
     suspend fun invoke(language: String, page: Int): Flow<RequestResult<MovieModel>> {
         return movieRepository.getPopularMovie(language, page)
+    }
+
+    suspend fun invokePaging(language: String): Flow<PagingData<MovieModel.MovieModelResult>> {
+        return movieRepository.getPopularMoviePaging(language)
     }
 }

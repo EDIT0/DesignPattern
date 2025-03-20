@@ -72,6 +72,9 @@ dependencies {
     /* Okhttp Interceptor */
     implementation(libs.logging.interceptor)
 
+    /* Paging3 */
+    implementation(libs.androidx.paging.runtime)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

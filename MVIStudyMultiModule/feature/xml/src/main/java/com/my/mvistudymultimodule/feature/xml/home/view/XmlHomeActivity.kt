@@ -77,6 +77,14 @@ class XmlHomeActivity : BaseDataBindingActivity<ActivityXmlHomeBinding>(R.layout
         }
     }
 
+    fun showCommonLoading(isShow: Boolean) {
+        binding.progressbar.visibility = if(isShow) {
+            View.VISIBLE
+        } else {
+            View.GONE
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         xmlHomeVM.xmlHomeNavController?.addOnDestinationChangedListener(navChangeListener)

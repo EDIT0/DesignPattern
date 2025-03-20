@@ -58,6 +58,13 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
 
+    /* Paging3 */
+    implementation(libs.androidx.paging.runtime)
+
+    /* Glide */
+    implementation(libs.glide)
+    ksp(libs.compiler)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

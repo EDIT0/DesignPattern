@@ -3,6 +3,8 @@
 
     <string name="common_network_connection_false">네트워크 연결을 확인해주세요</string>
     <string name="common_list_empty">데이터가 없습니다</string>
+    <string name="common_retry">다시 시도</string>
+    <string name="common_list_retry">버튼을 눌러 다시 시도해주세요</string>
 
     <!-- 대분류 메뉴 -->
     <string name="home_menu_xml">XML</string>

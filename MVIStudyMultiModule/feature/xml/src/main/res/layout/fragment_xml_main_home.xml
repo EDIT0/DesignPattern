@@ -15,7 +15,8 @@
             app:layout_constraintBottom_toTopOf="@id/rvMovie"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0">
 
             <ImageButton
                 android:id="@+id/ibBack"
@@ -74,9 +75,10 @@
             android:text="@string/common_list_empty"
             android:textColor="@color/black"
             android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="@id/rvMovie"
-            app:layout_constraintStart_toStartOf="@id/rvMovie"
-            app:layout_constraintTop_toTopOf="@id/rvMovie" />
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layoutSearchBar" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
