@@ -40,6 +40,9 @@ android {
 
 dependencies {
 
+    /* Module */
+    implementation(project(":core:base"))
+
     /* Compose */
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

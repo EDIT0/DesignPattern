@@ -17,6 +17,14 @@
     <fragment
         android:id="@+id/xmlMovieDetailFragment"
         android:name="com.my.mvistudymultimodule.feature.xml.moviedetail.view.XmlMovieDetailFragment"
-        android:label="XmlMovieDetailFragment" />
+        android:label="XmlMovieDetailFragment" >
+        <action
+            android:id="@+id/action_xmlMovieDetailFragment_to_xmlMovieSearchFragment"
+            app:destination="@id/xmlMovieSearchFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/xmlMovieSearchFragment"
+        android:name="com.my.mvistudymultimodule.feature.xml.moviesearch.view.XmlMovieSearchFragment"
+        android:label="XmlMovieSearchFragment" />
 
 </navigation>

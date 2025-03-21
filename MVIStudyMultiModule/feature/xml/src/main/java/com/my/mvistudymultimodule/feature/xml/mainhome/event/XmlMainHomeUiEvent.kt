@@ -1,5 +1,6 @@
 package com.my.mvistudymultimodule.feature.xml.mainhome.event
 
+import androidx.paging.CombinedLoadStates
 import androidx.paging.PagingData
 import com.my.mvistudymultimodule.core.model.MovieModel
 
@@ -12,7 +13,7 @@ sealed interface MovieListUiEvent {
 sealed interface MovieListPagingUiEvent {
     object Idle : MovieListPagingUiEvent
     data class UpdateMovieList(val movieList: PagingData<MovieModel.MovieModelResult>?) : MovieListPagingUiEvent
-    data class UpdateLoading(val isLoading: Boolean) : MovieListPagingUiEvent
+    data class UpdateLoadState(val loadStates: CombinedLoadStates): MovieListPagingUiEvent
 }
 
 sealed interface MovieListErrorUiEvent {

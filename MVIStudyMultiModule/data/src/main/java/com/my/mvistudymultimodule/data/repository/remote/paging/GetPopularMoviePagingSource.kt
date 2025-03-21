@@ -40,7 +40,7 @@ class GetPopularMoviePagingSource(
 
             // 에러 발생 시키기
             val randomNumber = Random().nextInt(10) + 1
-            if(randomNumber > 5) {
+            if(randomNumber > 8) {
                 throw IOException("IOException Error 만듬")
             }
 

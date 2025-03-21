@@ -3,6 +3,7 @@ package com.my.mvistudymultimodule.data.repository.remote
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.my.mvistudymultimodule.core.model.MovieDetailModel
 import com.my.mvistudymultimodule.core.model.MovieModel
 import com.my.mvistudymultimodule.data.BuildConfig
 import com.my.mvistudymultimodule.data.api.ApiService
@@ -50,5 +51,12 @@ class MovieRemoteDataSourceImpl @Inject constructor(
         page: Int
     ): Response<MovieModel> {
         return apiService.getSearchMovie(BuildConfig.API_KEY, query, language, page)
+    }
+
+    override suspend fun getMovieDetail(
+        movieId: Int,
+        language: String
+    ): Response<MovieDetailModel> {
+        return apiService.getMovieDetail(movieId, BuildConfig.API_KEY, language)
     }
 }

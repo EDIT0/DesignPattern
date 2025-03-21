@@ -12,12 +12,15 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.my.mvistudymultimodule.core.base.BaseDataBindingFragment
+import com.my.mvistudymultimodule.core.base.INTENT_KEY_MOVIE_ID
 import com.my.mvistudymultimodule.core.util.ClickUtil.onSingleClick
 import com.my.mvistudymultimodule.core.util.ClickUtil.onSingleClickWithDebounce
 import com.my.mvistudymultimodule.core.util.LogUtil
+import com.my.mvistudymultimodule.core.util.ToastUtil
 import com.my.mvistudymultimodule.feature.xml.R
 import com.my.mvistudymultimodule.feature.xml.databinding.FragmentXmlMainHomeBinding
 import com.my.mvistudymultimodule.feature.xml.home.view.XmlHomeActivity
@@ -89,115 +92,44 @@ class XmlMainHomeFragment : BaseDataBindingFragment<FragmentXmlMainHomeBinding>(
 
     private fun initRvAndAdapter() {
         binding.rvMovie.apply {
-            adapter = xmlMainHomeVM.movieListPagingAdapter
+            adapter = xmlMainHomeVM.getMovieListPagingAdapter()
             layoutManager = LinearLayoutManager(binding.root.context)
         }
 
-        xmlMainHomeVM.movieListPagingAdapter.addLoadStateListener {
-//            LogUtil.i_dev("prepend Loading ${it.source.prepend is LoadState.Loading}")
-//            LogUtil.i_dev("append Loading ${it.source.append is LoadState.Loading}")
-//            LogUtil.i_dev("refresh Loading ${it.source.refresh is LoadState.Loading}")
-
-            LogUtil.i_dev("addLoadStateListener ${it}")
-
-            when(it.source.append) {
-                is LoadState.Error -> {
-                    (activity as XmlHomeActivity).showCommonLoading(false)
-                }
-                is LoadState.Loading -> {
-                    (activity as XmlHomeActivity).showCommonLoading(true)
-                }
-                is LoadState.NotLoading -> {
-                    (activity as XmlHomeActivity).showCommonLoading(false)
-                }
-            }
-
-            when(it.source.prepend) {
-                is LoadState.Error -> {
-
-                }
-                is LoadState.Loading -> {
-
-                }
-                is LoadState.NotLoading -> {
-
-                }
-            }
-
-            when(it.source.refresh) {
-                is LoadState.Error -> {
-                    (activity as XmlHomeActivity).showCommonLoading(false)
-
-                    if(xmlMainHomeVM.movieListPagingAdapter.itemCount == 0) {
-                        binding.tvMovieListEmpty.visibility = View.VISIBLE
-                        binding.rvMovie.visibility = View.GONE
-                    }
-                }
-                is LoadState.Loading -> {
-                    (activity as XmlHomeActivity).showCommonLoading(true)
-                    binding.tvMovieListEmpty.visibility = View.GONE
-                    binding.rvMovie.visibility = View.VISIBLE
-                }
-                is LoadState.NotLoading -> {
-
-                }
-            }
-
-//            if(it.source.refresh is LoadState.Loading) {
-//                LogUtil.d_dev("첫 로딩 중 일 때")
-//            } else {
-//                LogUtil.d_dev("로딩 중이 아닐 때")
-//
-//                binding.tvMovieListEmpty.visibility = View.GONE
-//                binding.rvMovie.visibility = View.VISIBLE
-//
-//                val errorState = when {
-//                    it.prepend is LoadState.Error -> {
-//                        LogUtil.d_dev("페이징 prepend 에러: ${it.prepend}")
-//                        it.prepend as LoadState.Error
-//                    }
-//                    it.append is LoadState.Error -> {
-//                        LogUtil.d_dev("페이징 append 에러: ${it.append}")
-//                        it.append as LoadState.Error
-//                    }
-//                    it.refresh is LoadState.Error -> {
-//                        LogUtil.d_dev("페이징 refresh 에러: ${it.refresh}")
-//
-//                        if(xmlMainHomeVM.movieListPagingAdapter.itemCount == 0) {
-//                            binding.tvMovieListEmpty.visibility = View.VISIBLE
-//                            binding.rvMovie.visibility = View.GONE
-//                        }
-//
-//                        it.refresh as LoadState.Error
-//                    }
-//                    else -> null
-//                }
-
-//                LogUtil.d_dev("페이징 에러: ${errorState}")
-//                val errorMessage = errorState?.error?.message
-//            }
+        xmlMainHomeVM.getMovieListPagingAdapter().apply {
+            removeLoadStateListener(xmlMainHomeVM.getLoadStateListener())
+            addLoadStateListener(xmlMainHomeVM.getLoadStateListener())
         }
 
         // retry 말그대로 실패 후 재시도
         binding.apply {
             rvMovie.setHasFixedSize(true) // 사이즈 고정
             // header, footer 설정
-            rvMovie.adapter = xmlMainHomeVM.movieListPagingAdapter.withLoadStateHeaderAndFooter(
+            rvMovie.adapter = xmlMainHomeVM.getMovieListPagingAdapter().withLoadStateHeaderAndFooter(
                 header = LoadStateAdapter(
                     retry = {
-                        xmlMainHomeVM.movieListPagingAdapter.retry()
+                        xmlMainHomeVM.getMovieListPagingAdapter().retry()
                     }
                 ),
                 footer = LoadStateAdapter(
                     retry = {
-                        xmlMainHomeVM.movieListPagingAdapter.retry()
+                        xmlMainHomeVM.getMovieListPagingAdapter().retry()
                     }
                 )
             )
         }
 
-        xmlMainHomeVM.movieListPagingAdapter.setOnItemClickListener { i, movie ->
-            LogUtil.i_dev("${i}번째 데이터 ${movie.title}")
+        xmlMainHomeVM.getMovieListPagingAdapter().setOnItemClickListener { i, movie ->
+            LogUtil.i_dev("${i}번째 데이터 ${movie.id} / ${movie.title}")
+
+            movie.id?.let { id ->
+                val bundle = Bundle().apply {
+                    putInt(INTENT_KEY_MOVIE_ID, id)
+                }
+                findNavController().navigate(R.id.action_xmlMainHomeFragment_to_xmlMovieDetailFragment, args = bundle, navOptions = null)
+            }?: also {
+                ToastUtil.makeToast(binding.root, getString(com.my.mvistudymultimodule.core.base.R.string.common_movie_id_empty))
+            }
         }
     }
 
@@ -225,7 +157,7 @@ class XmlMainHomeFragment : BaseDataBindingFragment<FragmentXmlMainHomeBinding>(
         ).launchIn(scope)
 
         binding.tvMovieListEmpty.onSingleClick(1000L, {
-            xmlMainHomeVM.movieListPagingAdapter.retry()
+            xmlMainHomeVM.getMovieListPagingAdapter().retry()
         })
     }
 
@@ -284,17 +216,94 @@ class XmlMainHomeFragment : BaseDataBindingFragment<FragmentXmlMainHomeBinding>(
 
         scope.launch {
             xmlMainHomeVM.movieListPagingUiState.collect {
-                if(it.isLoading) {
-                    LogUtil.d_dev("뷰 업데이트 isLoading: ${it.isLoading}")
-                } else {
-                    LogUtil.d_dev("뷰 업데이트 isLoading: ${it.isLoading}")
+                it.movieList?.let { movieList ->
+                    delay(100L)
+                    xmlMainHomeVM.getMovieListPagingAdapter().submitData(this@XmlMainHomeFragment.lifecycle, movieList)
                 }
 
-                launch {
-                    it.movieList?.let { movieList ->
-                        delay(100L)
-                        xmlMainHomeVM.movieListPagingAdapter.submitData(this@XmlMainHomeFragment.lifecycle, movieList)
+                it.loadStates?.let { loadStatus ->
+                    //            LogUtil.i_dev("prepend Loading ${it.source.prepend is LoadState.Loading}")
+//            LogUtil.i_dev("append Loading ${it.source.append is LoadState.Loading}")
+//            LogUtil.i_dev("refresh Loading ${it.source.refresh is LoadState.Loading}")
+
+                    LogUtil.i_dev("addLoadStateListener ${loadStatus}")
+
+                    when(loadStatus.source.append) {
+                        is LoadState.Error -> {
+                            (activity as XmlHomeActivity).showCommonLoading(false)
+                        }
+                        is LoadState.Loading -> {
+                            (activity as XmlHomeActivity).showCommonLoading(true)
+                        }
+                        is LoadState.NotLoading -> {
+                            (activity as XmlHomeActivity).showCommonLoading(false)
+                        }
                     }
+
+                    when(loadStatus.source.prepend) {
+                        is LoadState.Error -> {
+
+                        }
+                        is LoadState.Loading -> {
+
+                        }
+                        is LoadState.NotLoading -> {
+
+                        }
+                    }
+
+                    when(loadStatus.source.refresh) {
+                        is LoadState.Error -> {
+                            (activity as XmlHomeActivity).showCommonLoading(false)
+
+                            if(xmlMainHomeVM.getMovieListPagingAdapter().itemCount == 0) {
+                                binding.tvMovieListEmpty.visibility = View.VISIBLE
+                                binding.rvMovie.visibility = View.GONE
+                            }
+                        }
+                        is LoadState.Loading -> {
+                            (activity as XmlHomeActivity).showCommonLoading(true)
+                            binding.tvMovieListEmpty.visibility = View.GONE
+                            binding.rvMovie.visibility = View.VISIBLE
+                        }
+                        is LoadState.NotLoading -> {
+
+                        }
+                    }
+
+//            if(it.source.refresh is LoadState.Loading) {
+//                LogUtil.d_dev("첫 로딩 중 일 때")
+//            } else {
+//                LogUtil.d_dev("로딩 중이 아닐 때")
+//
+//                binding.tvMovieListEmpty.visibility = View.GONE
+//                binding.rvMovie.visibility = View.VISIBLE
+//
+//                val errorState = when {
+//                    it.prepend is LoadState.Error -> {
+//                        LogUtil.d_dev("페이징 prepend 에러: ${it.prepend}")
+//                        it.prepend as LoadState.Error
+//                    }
+//                    it.append is LoadState.Error -> {
+//                        LogUtil.d_dev("페이징 append 에러: ${it.append}")
+//                        it.append as LoadState.Error
+//                    }
+//                    it.refresh is LoadState.Error -> {
+//                        LogUtil.d_dev("페이징 refresh 에러: ${it.refresh}")
+//
+//                        if(xmlMainHomeVM.movieListPagingAdapter.itemCount == 0) {
+//                            binding.tvMovieListEmpty.visibility = View.VISIBLE
+//                            binding.rvMovie.visibility = View.GONE
+//                        }
+//
+//                        it.refresh as LoadState.Error
+//                    }
+//                    else -> null
+//                }
+
+//                LogUtil.d_dev("페이징 에러: ${errorState}")
+//                val errorMessage = errorState?.error?.message
+//            }
                 }
             }
         }
@@ -319,7 +328,7 @@ class XmlMainHomeFragment : BaseDataBindingFragment<FragmentXmlMainHomeBinding>(
         super.onResume()
         LogUtil.i_dev("${javaClass.simpleName} onResume()")
 
-        if(xmlMainHomeVM.movieListPagingAdapter.itemCount == 0) {
+        if(xmlMainHomeVM.getMovieListPagingAdapter().itemCount == 0) {
             xmlMainHomeVM.handleViewModelEvent(XmlMainHomeViewModelEvent.GetPopularMovie())
         }
     }

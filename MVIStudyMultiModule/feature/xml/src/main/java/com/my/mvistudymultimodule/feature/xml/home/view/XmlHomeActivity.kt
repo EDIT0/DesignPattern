@@ -78,10 +78,14 @@ class XmlHomeActivity : BaseDataBindingActivity<ActivityXmlHomeBinding>(R.layout
     }
 
     fun showCommonLoading(isShow: Boolean) {
-        binding.progressbar.visibility = if(isShow) {
-            View.VISIBLE
-        } else {
-            View.GONE
+        try {
+            binding.progressbar.visibility = if(isShow) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
+        } catch (e: NullPointerException) {
+            LogUtil.e_dev(e.localizedMessage?:"")
         }
     }
 

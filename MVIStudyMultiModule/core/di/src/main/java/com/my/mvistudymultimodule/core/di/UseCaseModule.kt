@@ -1,6 +1,7 @@
 package com.my.mvistudymultimodule.core.di
 
 import com.my.mvistudymultimodule.domain.repository.MovieRepository
+import com.my.mvistudymultimodule.domain.usecase.GetMovieDetailUseCase
 import com.my.mvistudymultimodule.domain.usecase.GetPopularMovieUseCase
 import com.my.mvistudymultimodule.domain.usecase.GetSearchMovieUseCase
 import dagger.Module
@@ -28,13 +29,13 @@ object UseCaseModule {
         return GetSearchMovieUseCase(movieRepository)
     }
 
-//    @Provides
-//    @Singleton
-//    fun provideGetMovieDetailUseCase(
-//        movieRepository: MovieRepository
-//    ): GetMovieDetailUseCase {
-//        return GetMovieDetailUseCase(movieRepository)
-//    }
+    @Provides
+    @Singleton
+    fun provideGetMovieDetailUseCase(
+        movieRepository: MovieRepository
+    ): GetMovieDetailUseCase {
+        return GetMovieDetailUseCase(movieRepository)
+    }
 
 //    @Provides
 //    @Singleton

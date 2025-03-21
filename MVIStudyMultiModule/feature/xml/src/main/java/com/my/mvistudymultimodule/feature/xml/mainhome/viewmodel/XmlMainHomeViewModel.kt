@@ -2,6 +2,7 @@ package com.my.mvistudymultimodule.feature.xml.mainhome.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.viewModelScope
+import androidx.paging.CombinedLoadStates
 import androidx.paging.cachedIn
 import androidx.paging.map
 import com.my.mvistudymultimodule.core.base.BaseAndroidViewModel
@@ -42,7 +43,7 @@ class XmlMainHomeViewModel @Inject constructor(
     private val scope = viewModelScope
     private var scopeJob: Job? = null
 
-    val movieListPagingAdapter = MovieListPagingAdapter()
+    private val movieListPagingAdapter = MovieListPagingAdapter()
 
     private val language = "ko-KR"
 
@@ -70,14 +71,18 @@ class XmlMainHomeViewModel @Inject constructor(
             is MovieListPagingUiEvent.UpdateMovieList -> {
                 state.copy(movieList = event.movieList)
             }
-            is MovieListPagingUiEvent.UpdateLoading -> {
-                state.copy(isLoading = event.isLoading)
+            is MovieListPagingUiEvent.UpdateLoadState -> {
+                state.copy(loadStates = event.loadStates)
             }
         }
     }.stateIn(scope, SharingStarted.Eagerly, MovieListPagingUiState())
 
     private val _movieListErrorUiEvent = Channel<MovieListErrorUiEvent>()
     val movieListErrorUiEvent: Flow<MovieListErrorUiEvent> = _movieListErrorUiEvent.receiveAsFlow()
+
+    private val loadStateListener = { loadStatus: CombinedLoadStates ->
+        _movieListPagingUiEvent.value = MovieListPagingUiEvent.UpdateLoadState(loadStatus)
+    }
 
     fun handleViewModelEvent(xmlMainHomeViewModelEvent: XmlMainHomeViewModelEvent) {
         when(xmlMainHomeViewModelEvent) {
@@ -152,4 +157,11 @@ class XmlMainHomeViewModel @Inject constructor(
         }
     }
 
+    fun getMovieListPagingAdapter(): MovieListPagingAdapter {
+        return movieListPagingAdapter
+    }
+
+    fun getLoadStateListener(): (CombinedLoadStates) -> Unit {
+        return loadStateListener
+    }
 }
