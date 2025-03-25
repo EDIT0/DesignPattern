@@ -9,9 +9,7 @@ import com.bumptech.glide.Glide
 import com.my.mvistudymultimodule.core.di.BuildConfig
 import com.my.mvistudymultimodule.core.model.MovieModel
 import com.my.mvistudymultimodule.core.util.ClickUtil.onSingleClick
-import com.my.mvistudymultimodule.core.util.ClickUtil.onSingleClickWithDebounce
 import com.my.mvistudymultimodule.feature.xml.databinding.ItemMovieBinding
-import kotlinx.coroutines.flow.launchIn
 
 class MovieListPagingAdapter : PagingDataAdapter<MovieModel.MovieModelResult, MovieListPagingAdapter.ViewHolder>(diffUtil) {
 

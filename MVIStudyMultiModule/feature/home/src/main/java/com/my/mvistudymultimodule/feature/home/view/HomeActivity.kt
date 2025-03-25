@@ -2,7 +2,6 @@ package com.my.mvistudymultimodule.feature.home.view
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
@@ -20,9 +19,7 @@ import com.my.mvistudymultimodule.feature.home.R
 import com.my.mvistudymultimodule.feature.home.databinding.ActivityHomeBinding
 import com.my.mvistudymultimodule.feature.home.viewmodel.HomeViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class HomeActivity : BaseDataBindingActivity<ActivityHomeBinding>(R.layout.activity_home) {
@@ -60,13 +57,13 @@ class HomeActivity : BaseDataBindingActivity<ActivityHomeBinding>(R.layout.activ
                 }
                 activityNavigator.navigateActivityToXmlActivity(this, launchActivity, options, dataBundle)
 
-                activityScope.launch {
-                    for(i in 1 .. 10) {
-                        LogUtil.d_dev("MYTAG ${javaClass.simpleName} btnXML clicked ${i}")
-                        delay(1000L)
-                        binding.btnXML.text = i.toString()
-                    }
-                }
+//                activityScope.launch {
+//                    for(i in 1 .. 10) {
+//                        LogUtil.d_dev("MYTAG ${javaClass.simpleName} btnXML clicked ${i}")
+//                        delay(1000L)
+//                        binding.btnXML.text = i.toString()
+//                    }
+//                }
             },
             debounceTime = 1000L
         ).launchIn(activityScope)
@@ -74,11 +71,22 @@ class HomeActivity : BaseDataBindingActivity<ActivityHomeBinding>(R.layout.activ
         binding.btnCompose.onSingleClickWithCancel(
             onClicked = {
                 LogUtil.d_dev("MYTAG ${javaClass.simpleName} btnCompose clicked")
-                for(i in 1 .. 10) {
-                    LogUtil.d_dev("MYTAG ${javaClass.simpleName} btnCompose clicked ${i}")
-                    delay(1000L)
-                    binding.btnCompose.text = i.toString()
+
+                val animList: List<androidx.core.util.Pair<View, String>> = listOf(
+                    androidx.core.util.Pair<View, String>(binding.btnXML, "btnComposeToZHome"),
+                )
+                val options = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, *animList.toTypedArray())
+                val dataBundle = Bundle().apply {
+                    putString("key1", "value1")
+                    putInt("key2", 123)
                 }
+                activityNavigator.navigateActivityToComposeActivity(this, launchActivity, options, dataBundle)
+
+//                for(i in 1 .. 10) {
+//                    LogUtil.d_dev("MYTAG ${javaClass.simpleName} btnCompose clicked ${i}")
+//                    delay(1000L)
+//                    binding.btnCompose.text = i.toString()
+//                }
             },
             scope = lifecycleScope
         ).launchIn(activityScope)

@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.app.ActivityOptionsCompat
 import com.my.mvistudymultimodule.core.base.ActivityNavigator
+import com.my.mvistudymultimodule.feature.compose.home.view.ComposeHomeActivity
 import com.my.mvistudymultimodule.feature.xml.home.view.XmlHomeActivity
 
 /**
@@ -32,7 +33,10 @@ class ActivityNavigatorImpl: ActivityNavigator {
         options: ActivityOptionsCompat?,
         dataBundle: Bundle?
     ) {
-        TODO("Not yet implemented")
+        val intent = Intent(context, ComposeHomeActivity::class.java)
+//        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        dataBundle?.let { intent.putExtras(dataBundle) }
+        launcher.launch(intent, options)
     }
 
 }
