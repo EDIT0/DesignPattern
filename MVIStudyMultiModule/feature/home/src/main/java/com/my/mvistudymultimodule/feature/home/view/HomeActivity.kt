@@ -73,7 +73,7 @@ class HomeActivity : BaseDataBindingActivity<ActivityHomeBinding>(R.layout.activ
                 LogUtil.d_dev("MYTAG ${javaClass.simpleName} btnCompose clicked")
 
                 val animList: List<androidx.core.util.Pair<View, String>> = listOf(
-                    androidx.core.util.Pair<View, String>(binding.btnXML, "btnComposeToZHome"),
+                    androidx.core.util.Pair<View, String>(binding.btnXML, "btnComposeToComposeHome"),
                 )
                 val options = ActivityOptionsCompat.makeSceneTransitionAnimation(activity, *animList.toTypedArray())
                 val dataBundle = Bundle().apply {

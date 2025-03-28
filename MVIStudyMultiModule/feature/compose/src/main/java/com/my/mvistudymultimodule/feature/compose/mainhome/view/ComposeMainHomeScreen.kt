@@ -2,25 +2,44 @@ package com.my.mvistudymultimodule.feature.compose.mainhome.view
 
 import android.content.Context
 import android.content.Intent
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -32,12 +51,16 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.my.mvistudymultimodule.core.base.ComposeCustomScreen
 import com.my.mvistudymultimodule.core.model.MovieModel
 import com.my.mvistudymultimodule.core.util.LogUtil
-import com.my.mvistudymultimodule.feature.compose.home.view.ui.theme.color7F000000
+import com.my.mvistudymultimodule.feature.compose.R
+import com.my.mvistudymultimodule.feature.compose.home.view.ui.theme.grey300
 import com.my.mvistudymultimodule.feature.compose.home.view.ui.theme.white
 import com.my.mvistudymultimodule.feature.compose.home.viewmodel.ComposeHomeViewModel
+import com.my.mvistudymultimodule.feature.compose.mainhome.event.ComposeMainHomeScreenEvent
 import com.my.mvistudymultimodule.feature.compose.mainhome.event.ComposeMainHomeViewModelEvent
 import com.my.mvistudymultimodule.feature.compose.mainhome.state.MovieListPagingUiState
 import com.my.mvistudymultimodule.feature.compose.mainhome.viewmodel.ComposeMainHomeViewModel
+import com.skydoves.landscapist.ImageOptions
+import com.skydoves.landscapist.glide.GlideImage
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
@@ -55,6 +78,21 @@ fun ComposeMainHomeScreen(
     ComposeMainHomeUI(
         localContext = localContext,
         scope = scope,
+        composeMainHomeScreenEvent = {
+            when(it) {
+                is ComposeMainHomeScreenEvent.OnBackClick -> {
+                    if(localContext is ComponentActivity) {
+                        localContext.finish()
+                    }
+                }
+                is ComposeMainHomeScreenEvent.OnMovieClick -> {
+                    LogUtil.d_dev("영화 클릭: ${it.movieInfo.title}")
+                }
+                is ComposeMainHomeScreenEvent.OnSearchClick -> {
+                    LogUtil.d_dev("검색 클릭")
+                }
+            }
+        },
         composeMainHomeViewModelEvent = {
             when(it) {
                 is ComposeMainHomeViewModelEvent.GetPopularMovie -> {
@@ -75,6 +113,7 @@ fun ComposeMainHomeScreen(
 fun ComposeMainHomeUI(
     localContext: Context,
     scope: CoroutineScope,
+    composeMainHomeScreenEvent: (ComposeMainHomeScreenEvent) -> Unit,
     composeMainHomeViewModelEvent: (ComposeMainHomeViewModelEvent) -> Unit,
     movieListPagingUiState: MovieListPagingUiState,
     movieListPaging: LazyPagingItems<MovieModel.MovieModelResult>?
@@ -89,13 +128,28 @@ fun ComposeMainHomeUI(
         backgroundColor = white()
     ) {
         Column {
+            HeaderView(
+                localContext = localContext,
+                onBackClick = {
+                    composeMainHomeScreenEvent.invoke(ComposeMainHomeScreenEvent.OnBackClick())
+                },
+                onSearchClick = {
+                    composeMainHomeScreenEvent.invoke(ComposeMainHomeScreenEvent.OnSearchClick())
+                }
+            )
+
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
             ) {
                 items(movieListPaging?.itemCount ?: 0) { index ->
                     movieListPaging?.get(index)?.let { movie ->
-                        Text(modifier = Modifier.padding(20.dp), text = "${movie.title}")
+                        MovieListItemView(
+                            movieInfo = movie,
+                            onClick = { item ->
+                                composeMainHomeScreenEvent.invoke(ComposeMainHomeScreenEvent.OnMovieClick(movieInfo = item))
+                            }
+                        )
                     }
                 }
 
@@ -107,6 +161,7 @@ fun ComposeMainHomeUI(
                             isShowLoading.value = false
                             item {
                                 RetryView(
+                                    localContext = localContext,
                                     retry = {
                                         movieListPaging.retry()
                                     },
@@ -129,6 +184,7 @@ fun ComposeMainHomeUI(
                         is LoadState.Error -> {
                             item {
                                 RetryView(
+                                    localContext = localContext,
                                     retry = {
                                         movieListPaging.retry()
                                     },
@@ -148,6 +204,7 @@ fun ComposeMainHomeUI(
                         is LoadState.Error -> {
                             item {
                                 RetryView(
+                                    localContext = localContext,
                                     retry = {
                                         movieListPaging.retry()
                                     },
@@ -178,6 +235,142 @@ fun ComposeMainHomeUI(
         }
 
         LoadingView(isShow = isShowLoading.value)
+
+        Text(
+            modifier = Modifier
+                .padding(20.dp)
+                .align(Alignment.BottomEnd),
+            text = "Compose"
+        )
+    }
+
+    BackHandler {
+        composeMainHomeScreenEvent.invoke(ComposeMainHomeScreenEvent.OnBackClick())
+    }
+}
+
+@Composable
+fun HeaderView(
+    localContext: Context,
+    onBackClick: () -> Unit,
+    onSearchClick: () -> Unit
+) {
+    val headerViewHeight = rememberSaveable {
+        mutableIntStateOf(60)
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(headerViewHeight.value.dp)
+    ) {
+        IconButton(
+            modifier = Modifier
+                .height(headerViewHeight.value.dp),
+            onClick = {
+                onBackClick.invoke()
+            }
+        ) {
+            Image(
+                painter = painterResource(com.my.mvistudymultimodule.core.base.R.drawable.ic_arrow_back_ios_new_24_000000),
+                contentDescription = "Back"
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .height(headerViewHeight.value.dp)
+                .clickable {
+                    onSearchClick.invoke()
+                },
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                modifier = Modifier
+                    .wrapContentHeight()
+                    .padding(horizontal = 5.dp),
+                text = localContext.getString(com.my.mvistudymultimodule.core.base.R.string.main_home_movie_search)
+            )
+        }
+
+        IconButton(
+            modifier = Modifier
+                .height(headerViewHeight.value.dp),
+            onClick = {
+                onSearchClick.invoke()
+            }
+        ) {
+            Image(
+                painter = painterResource(com.my.mvistudymultimodule.core.base.R.drawable.ic_search_24_000000),
+                contentDescription = "Search"
+            )
+        }
+    }
+}
+
+@Composable
+fun MovieListItemView(
+    movieInfo: MovieModel.MovieModelResult,
+    onClick: (item: MovieModel.MovieModelResult) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                onClick.invoke(movieInfo)
+            }
+    ) {
+        Row(
+            modifier = Modifier
+                .width(100.dp)
+        ) {
+            GlideImage(
+                modifier = Modifier
+                    .width(100.dp)
+                    .heightIn(min = 100.dp)
+                    .padding(5.dp)
+                    .clip(MaterialTheme.shapes.extraSmall),
+                imageModel = {
+                    com.my.mvistudymultimodule.core.di.BuildConfig.BASE_MOVIE_POSTER + movieInfo.posterPath
+                },
+                previewPlaceholder = painterResource(id = com.my.mvistudymultimodule.core.base.R.drawable.ic_search_24_000000),
+                imageOptions = ImageOptions(
+                    alignment = Alignment.TopCenter,
+                    contentScale = ContentScale.FillWidth
+                ),
+                failure = {
+                    ImageEmptyView()
+                }
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 20.dp)
+            ) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    text = movieInfo.title.toString()
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 20.dp)
+            ) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    text = movieInfo.releaseDate.toString()
+                )
+            }
+        }
     }
 }
 
@@ -211,6 +404,7 @@ fun ListLoadingView() {
 
 @Composable
 fun RetryView(
+    localContext: Context,
     retry: () -> Unit,
     message: String
 ) {
@@ -225,7 +419,7 @@ fun RetryView(
                 retry.invoke()
             }
         ) {
-            Text("다시 시도")
+            Text(localContext.getString(com.my.mvistudymultimodule.core.base.R.string.common_retry))
         }
         Text(
             modifier = Modifier
@@ -236,12 +430,36 @@ fun RetryView(
     }
 }
 
+@Composable
+fun ImageEmptyView() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .background(grey300(), RoundedCornerShape(3.dp)),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            painter = painterResource(id = com.my.mvistudymultimodule.core.base.R.drawable.ic_save_24_000000),
+            contentDescription = "ImageEmptyView"
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewImageEmptyView() {
+    ImageEmptyView()
+}
+
 @Preview(showBackground = true)
 @Composable
 fun ComposeMainHomeScreenPreview() {
     ComposeMainHomeUI(
         localContext = LocalContext.current,
         scope = rememberCoroutineScope(),
+        composeMainHomeScreenEvent = {},
         composeMainHomeViewModelEvent = {},
         movieListPagingUiState = MovieListPagingUiState(),
         movieListPaging = null
