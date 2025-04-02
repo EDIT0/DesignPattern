@@ -15,9 +15,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,9 +47,9 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.my.mvistudymultimodule.core.base.ComposeCustomScreen
+import com.my.mvistudymultimodule.core.base.NavigationScreenName
 import com.my.mvistudymultimodule.core.model.MovieModel
 import com.my.mvistudymultimodule.core.util.LogUtil
-import com.my.mvistudymultimodule.feature.compose.R
 import com.my.mvistudymultimodule.feature.compose.home.view.ui.theme.grey300
 import com.my.mvistudymultimodule.feature.compose.home.view.ui.theme.white
 import com.my.mvistudymultimodule.feature.compose.home.viewmodel.ComposeHomeViewModel
@@ -73,8 +71,12 @@ fun ComposeMainHomeScreen(
     val localContext = LocalContext.current
     val scope = rememberCoroutineScope()
 
+    val initExecute = rememberSaveable {
+        mutableStateOf(true)
+    }
+
     val movieListPagingUiState = composeMainHomeViewModel.movieListPagingUiState.collectAsState().value
-    
+
     ComposeMainHomeUI(
         localContext = localContext,
         scope = scope,
@@ -87,6 +89,7 @@ fun ComposeMainHomeScreen(
                 }
                 is ComposeMainHomeScreenEvent.OnMovieClick -> {
                     LogUtil.d_dev("영화 클릭: ${it.movieInfo.title}")
+                    navController.navigate(route = "${NavigationScreenName.ComposeMovieDetailScreen.name}/${it.movieInfo.id}")
                 }
                 is ComposeMainHomeScreenEvent.OnSearchClick -> {
                     LogUtil.d_dev("검색 클릭")
@@ -105,7 +108,10 @@ fun ComposeMainHomeScreen(
     )
 
     LaunchedEffect(Unit) {
-        composeMainHomeViewModel.handleViewModelEvent(ComposeMainHomeViewModelEvent.GetPopularMovie())
+        if(initExecute.value) {
+            initExecute.value = false
+            composeMainHomeViewModel.handleViewModelEvent(ComposeMainHomeViewModelEvent.GetPopularMovie())
+        }
     }
 }
 
@@ -323,12 +329,12 @@ fun MovieListItemView(
     ) {
         Row(
             modifier = Modifier
-                .width(100.dp)
+                .fillMaxWidth(0.2f) // 화면 너비 1/5 사용
         ) {
             GlideImage(
                 modifier = Modifier
-                    .width(100.dp)
-                    .heightIn(min = 100.dp)
+                    .fillMaxWidth()
+                    .aspectRatio(3f / 4f) // 3:4 비율 유지
                     .padding(5.dp)
                     .clip(MaterialTheme.shapes.extraSmall),
                 imageModel = {

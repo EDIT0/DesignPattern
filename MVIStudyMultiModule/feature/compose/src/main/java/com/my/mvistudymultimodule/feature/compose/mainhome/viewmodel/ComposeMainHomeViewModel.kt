@@ -6,7 +6,6 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
 import com.my.mvistudymultimodule.core.base.BaseAndroidViewModel
-import com.my.mvistudymultimodule.core.model.MovieModel
 import com.my.mvistudymultimodule.core.util.LogUtil
 import com.my.mvistudymultimodule.domain.usecase.GetPopularMovieUseCase
 import com.my.mvistudymultimodule.feature.compose.mainhome.event.ComposeMainHomeViewModelEvent
@@ -17,7 +16,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.stateIn

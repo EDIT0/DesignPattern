@@ -1,14 +1,14 @@
-package com.my.mvistudymultimodule.feature.xml.moviedetail.viewmodel
+package com.my.mvistudymultimodule.feature.compose.moviedetail.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.my.mvistudymultimodule.core.base.BaseAndroidViewModel
 import com.my.mvistudymultimodule.core.base.RequestResult
 import com.my.mvistudymultimodule.domain.usecase.GetMovieDetailUseCase
-import com.my.mvistudymultimodule.feature.xml.moviedetail.event.MovieDetailErrorUiEvent
-import com.my.mvistudymultimodule.feature.xml.moviedetail.event.MovieDetailUiEvent
-import com.my.mvistudymultimodule.feature.xml.moviedetail.event.XmlMovieDetailViewModelEvent
-import com.my.mvistudymultimodule.feature.xml.moviedetail.state.MovieDetailUiState
+import com.my.mvistudymultimodule.feature.compose.moviedetail.event.ComposeMovieDetailViewModelEvent
+import com.my.mvistudymultimodule.feature.compose.moviedetail.event.MovieDetailErrorUiEvent
+import com.my.mvistudymultimodule.feature.compose.moviedetail.event.MovieDetailUiEvent
+import com.my.mvistudymultimodule.feature.compose.moviedetail.state.MovieDetailUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -29,7 +29,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class XmlMovieDetailViewModel @Inject constructor(
+class ComposeMovieDetailViewModel @Inject constructor(
     app: Application,
     private val getMovieDetailUseCase: GetMovieDetailUseCase
 ): BaseAndroidViewModel(app) {
@@ -65,13 +65,11 @@ class XmlMovieDetailViewModel @Inject constructor(
     private val _movieDetailErrorUiEvent = Channel<MovieDetailErrorUiEvent>()
     val movieDetailErrorUiEvent: Flow<MovieDetailErrorUiEvent> = _movieDetailErrorUiEvent.receiveAsFlow()
 
-    fun handleViewModelEvent(xmlMovieDetailViewModelEvent: XmlMovieDetailViewModelEvent) {
-        when(xmlMovieDetailViewModelEvent) {
-            is XmlMovieDetailViewModelEvent.SetMovieId -> {
-                movieId = xmlMovieDetailViewModelEvent.movieId
-            }
-            is XmlMovieDetailViewModelEvent.GetMovieDetail -> {
-                getMovieDetail()
+    fun handleViewModelEvent(composeMovieDetailViewModelEvent: ComposeMovieDetailViewModelEvent) {
+        when(composeMovieDetailViewModelEvent) {
+            is ComposeMovieDetailViewModelEvent.GetMovieDetail -> {
+                movieId = composeMovieDetailViewModelEvent.movieId
+                getMovieDetail(movieId = movieId)
             }
         }
     }
@@ -79,7 +77,7 @@ class XmlMovieDetailViewModel @Inject constructor(
     /**
      * 영화 상세정보 요청
      */
-    private fun getMovieDetail() {
+    private fun getMovieDetail(movieId: Int) {
         scopeJob?.cancel()
         scopeJob = scope.launch {
             getMovieDetailUseCase.invoke(movieId, language)
