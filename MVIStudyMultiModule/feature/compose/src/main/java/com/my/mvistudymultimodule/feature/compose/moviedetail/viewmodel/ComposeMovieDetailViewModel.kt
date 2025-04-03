@@ -4,6 +4,8 @@ import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.my.mvistudymultimodule.core.base.BaseAndroidViewModel
 import com.my.mvistudymultimodule.core.base.RequestResult
+import com.my.mvistudymultimodule.core.model.MovieModel
+import com.my.mvistudymultimodule.core.util.LogUtil
 import com.my.mvistudymultimodule.domain.usecase.GetMovieDetailUseCase
 import com.my.mvistudymultimodule.feature.compose.moviedetail.event.ComposeMovieDetailViewModelEvent
 import com.my.mvistudymultimodule.feature.compose.moviedetail.event.MovieDetailErrorUiEvent
@@ -39,6 +41,7 @@ class ComposeMovieDetailViewModel @Inject constructor(
 
     private val language = "ko-KR"
     private var movieId: Int = -1
+    private var movieInfo: MovieModel.MovieModelResult? = null
 
     private var scrollPosition: Int = 0
 
@@ -69,6 +72,8 @@ class ComposeMovieDetailViewModel @Inject constructor(
         when(composeMovieDetailViewModelEvent) {
             is ComposeMovieDetailViewModelEvent.GetMovieDetail -> {
                 movieId = composeMovieDetailViewModelEvent.movieId
+                movieInfo = composeMovieDetailViewModelEvent.movieInfo
+                LogUtil.i_dev("리스트에서 영화 정보 가져오기 성공: ${movieId} / ${movieInfo}")
                 getMovieDetail(movieId = movieId)
             }
         }

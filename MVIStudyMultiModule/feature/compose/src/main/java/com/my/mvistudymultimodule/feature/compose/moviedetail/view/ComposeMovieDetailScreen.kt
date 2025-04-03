@@ -39,8 +39,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.google.gson.Gson
 import com.my.mvistudymultimodule.core.base.ComposeCustomScreen
 import com.my.mvistudymultimodule.core.base.NavigationScreenName
+import com.my.mvistudymultimodule.core.model.MovieModel
 import com.my.mvistudymultimodule.core.util.dpToSp
 import com.my.mvistudymultimodule.feature.compose.home.view.ui.theme.white
 import com.my.mvistudymultimodule.feature.compose.home.viewmodel.ComposeHomeViewModel
@@ -60,7 +62,8 @@ fun ComposeMovieDetailScreen(
     composeHomeViewModel: ComposeHomeViewModel,
     composeMovieDetailViewModel: ComposeMovieDetailViewModel = hiltViewModel(),
     intent: Intent,
-    movieId: Int
+    movieId: Int,
+    movieInfo: MovieModel.MovieModelResult
 ) {
     val localContext = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -96,7 +99,7 @@ fun ComposeMovieDetailScreen(
     LaunchedEffect(Unit) {
         if(initExecute.value) {
             initExecute.value = false
-            composeMovieDetailViewModel.handleViewModelEvent(ComposeMovieDetailViewModelEvent.GetMovieDetail(movieId = movieId))
+            composeMovieDetailViewModel.handleViewModelEvent(ComposeMovieDetailViewModelEvent.GetMovieDetail(movieId = movieId, movieInfo = movieInfo))
             delay(3000L)
             navController.navigate(route = NavigationScreenName.TestScreen.name)
         }

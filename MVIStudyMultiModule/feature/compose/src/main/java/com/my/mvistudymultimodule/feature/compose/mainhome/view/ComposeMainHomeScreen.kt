@@ -46,6 +46,7 @@ import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.google.gson.Gson
 import com.my.mvistudymultimodule.core.base.ComposeCustomScreen
 import com.my.mvistudymultimodule.core.base.NavigationScreenName
 import com.my.mvistudymultimodule.core.model.MovieModel
@@ -60,6 +61,8 @@ import com.my.mvistudymultimodule.feature.compose.mainhome.viewmodel.ComposeMain
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.glide.GlideImage
 import kotlinx.coroutines.CoroutineScope
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @Composable
 fun ComposeMainHomeScreen(
@@ -89,7 +92,8 @@ fun ComposeMainHomeScreen(
                 }
                 is ComposeMainHomeScreenEvent.OnMovieClick -> {
                     LogUtil.d_dev("영화 클릭: ${it.movieInfo.title}")
-                    navController.navigate(route = "${NavigationScreenName.ComposeMovieDetailScreen.name}/${it.movieInfo.id}")
+                    val movieInfoStr = URLEncoder.encode(Gson().toJson(it.movieInfo), StandardCharsets.UTF_8.name())
+                    navController.navigate(route = "${NavigationScreenName.ComposeMovieDetailScreen.name}/${it.movieInfo.id}/${movieInfoStr}")
                 }
                 is ComposeMainHomeScreenEvent.OnSearchClick -> {
                     LogUtil.d_dev("검색 클릭")

@@ -75,6 +75,9 @@ dependencies {
     /* Preview */
     debugImplementation(libs.ui.tooling)
 
+    /* Gson */
+    implementation(libs.gson.v2121)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

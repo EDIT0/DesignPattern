@@ -2,6 +2,7 @@
 agp = "8.5.0"
 glide = "4.15.1"
 gson = "2.11.0"
+gsonVersion = "2.12.1"
 hiltAndroid = "2.55"
 kotlin = "2.1.0"
 coreKtx = "1.15.0"
@@ -35,6 +36,7 @@ compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+gson-v2121 = { module = "com.google.code.gson:gson", version.ref = "gsonVersion" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroid" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
