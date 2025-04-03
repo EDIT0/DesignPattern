@@ -6,6 +6,7 @@ plugins {
 
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
+    id("androidx.room")
 }
 
 val localProperties = Properties().apply {
@@ -49,6 +50,9 @@ android {
     buildFeatures {
         buildConfig = true
     }
+    room {
+        schemaDirectory("$projectDir/schemas")
+    }
 }
 
 dependencies {
@@ -68,6 +72,11 @@ dependencies {
 
     /* Paging3 */
     implementation(libs.androidx.paging.runtime)
+
+    /* Room */
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

@@ -1,8 +1,13 @@
 package com.my.mvistudymultimodule.core.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
+@Entity(tableName = "MovieDetailEntity")
 data class MovieDetailModel(
+    @PrimaryKey(autoGenerate = true)
+    val idx: Int,
     @SerializedName("adult")
     val adult: Boolean,
     @SerializedName("backdrop_path")

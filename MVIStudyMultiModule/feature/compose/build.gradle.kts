@@ -5,6 +5,7 @@ plugins {
 
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
+    id("androidx.room")
 }
 
 android {
@@ -37,6 +38,9 @@ android {
     buildFeatures {
         buildConfig = true
         compose = true
+    }
+    room {
+        schemaDirectory("$projectDir/schemas")
     }
 }
 
@@ -77,6 +81,11 @@ dependencies {
 
     /* Gson */
     implementation(libs.gson.v2121)
+
+    /* Room */
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

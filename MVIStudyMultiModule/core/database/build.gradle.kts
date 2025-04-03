@@ -3,12 +3,11 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
 
     id("com.google.devtools.ksp")
-    id("com.google.dagger.hilt.android")
     id("androidx.room")
 }
 
 android {
-    namespace = "com.my.mvistudymultimodule.domain"
+    namespace = "com.my.mvistudymultimodule.core.database"
     compileSdk = 35
 
     defaultConfig {
@@ -42,24 +41,7 @@ android {
 dependencies {
 
     /* Module */
-    implementation(project(":core:base"))
     implementation(project(":core:model"))
-
-    /* Hilt */
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.android.compiler)
-
-    /* Retrofit */
-    implementation(libs.retrofit)
-    implementation(libs.converter.gson)
-
-    /* Paging3 */
-    implementation(libs.androidx.paging.runtime)
-
-    /* Room */
-    implementation(libs.androidx.room.runtime)
-    ksp(libs.androidx.room.compiler)
-    implementation(libs.androidx.room.ktx)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -67,4 +49,12 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    /* Gson */
+    implementation(libs.gson.v2121)
+
+    /* Room */
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
 }

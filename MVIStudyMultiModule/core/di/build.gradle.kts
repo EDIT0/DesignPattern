@@ -6,6 +6,7 @@ plugins {
 
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
+    id("androidx.room")
 }
 
 val localProperties = Properties().apply {
@@ -49,11 +50,15 @@ android {
     buildFeatures {
         buildConfig = true
     }
+    room {
+        schemaDirectory("$projectDir/schemas")
+    }
 }
 
 dependencies {
 
     /* Module */
+    implementation(project(":core:database"))
     implementation(project(":core:util"))
     implementation(project(":data"))
     implementation(project(":domain"))
@@ -68,6 +73,11 @@ dependencies {
 
     /* Okhttp Interceptor */
     implementation(libs.logging.interceptor)
+
+    /* Room */
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

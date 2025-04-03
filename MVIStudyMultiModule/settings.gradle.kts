@@ -23,6 +23,7 @@ rootProject.name = "MVIStudyMultiModule"
 include(":app")
 include(":feature:home")
 include(":core:base")
+include(":core:database")
 include(":core:di")
 include(":core:model")
 include(":feature:xml")

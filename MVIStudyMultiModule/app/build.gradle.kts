@@ -47,6 +47,7 @@ dependencies {
 
     /* Module */
     implementation(project(":core:base"))
+    implementation(project(":core:database"))
     implementation(project(":core:di"))
     implementation(project(":core:model"))
     implementation(project(":core:util"))

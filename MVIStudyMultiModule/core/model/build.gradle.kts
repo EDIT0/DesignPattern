@@ -1,6 +1,9 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
+
+    id("com.google.devtools.ksp")
+    id("androidx.room")
 }
 
 android {
@@ -30,12 +33,20 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    room {
+        schemaDirectory("$projectDir/schemas")
+    }
 }
 
 dependencies {
 
     /* Gson */
     implementation(libs.gson)
+
+    /* Room */
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
