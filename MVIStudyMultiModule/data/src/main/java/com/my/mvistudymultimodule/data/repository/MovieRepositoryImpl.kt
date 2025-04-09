@@ -4,6 +4,7 @@ import androidx.paging.PagingData
 import com.my.mvistudymultimodule.core.base.RequestResult
 import com.my.mvistudymultimodule.core.model.MovieDetailModel
 import com.my.mvistudymultimodule.core.model.MovieModel
+import com.my.mvistudymultimodule.data.repository.local.MovieLocalDataSource
 import com.my.mvistudymultimodule.data.repository.remote.MovieRemoteDataSource
 import com.my.mvistudymultimodule.domain.repository.MovieRepository
 import kotlinx.coroutines.flow.Flow
@@ -12,7 +13,8 @@ import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class MovieRepositoryImpl @Inject constructor(
-    private val movieRemoteDataSource: MovieRemoteDataSource,
+    private val movieLocalDataSource: MovieLocalDataSource,
+    private val movieRemoteDataSource: MovieRemoteDataSource
 ): MovieRepository {
     override suspend fun getPopularMovie(
         language: String,
@@ -84,6 +86,48 @@ class MovieRepositoryImpl @Inject constructor(
                 }
             } else {
                 emit(RequestResult.Error("ERROR", "error message"))
+            }
+        }.catch {
+            throw Exception(it)
+        }
+    }
+
+    override suspend fun saveMovieDetail(movieDetail: MovieDetailModel): Flow<RequestResult<Boolean>> {
+        return flow<RequestResult<Boolean>> {
+            val response = movieLocalDataSource.saveMovieDetail(movieDetail)
+
+            if(response) {
+                emit(RequestResult.Success(true))
+            } else {
+                emit(RequestResult.Error("ERROR", "error message"))
+            }
+        }.catch {
+            throw Exception(it)
+        }
+    }
+
+    override suspend fun deleteMovieDetail(movieDetail: MovieDetailModel): Flow<RequestResult<Boolean>> {
+        return flow<RequestResult<Boolean>> {
+            val response = movieLocalDataSource.deleteMovieDetail(movieDetail)
+
+            if(response) {
+                emit(RequestResult.Success(true))
+            } else {
+                emit(RequestResult.Error("ERROR", "error message"))
+            }
+        }.catch {
+            throw Exception(it)
+        }
+    }
+
+    override suspend fun checkMovieDetail(movieId: Int): Flow<RequestResult<Boolean>> {
+        return flow<RequestResult<Boolean>> {
+            val response = movieLocalDataSource.checkMovieDetail(movieId)
+
+            if(response) {
+                emit(RequestResult.Success(true))
+            } else {
+                emit(RequestResult.Success(false))
             }
         }.catch {
             throw Exception(it)

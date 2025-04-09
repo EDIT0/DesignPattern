@@ -74,6 +74,9 @@ fun ComposeMainHomeScreen(
     val localContext = LocalContext.current
     val scope = rememberCoroutineScope()
 
+    /**
+     * 최초 실행 분기
+     */
     val initExecute = rememberSaveable {
         mutableStateOf(true)
     }

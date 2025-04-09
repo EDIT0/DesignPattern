@@ -42,6 +42,7 @@ import androidx.navigation.NavController
 import com.google.gson.Gson
 import com.my.mvistudymultimodule.core.base.ComposeCustomScreen
 import com.my.mvistudymultimodule.core.base.NavigationScreenName
+import com.my.mvistudymultimodule.core.model.MovieDetailModel
 import com.my.mvistudymultimodule.core.model.MovieModel
 import com.my.mvistudymultimodule.core.util.dpToSp
 import com.my.mvistudymultimodule.feature.compose.home.view.ui.theme.white
@@ -49,12 +50,14 @@ import com.my.mvistudymultimodule.feature.compose.home.viewmodel.ComposeHomeView
 import com.my.mvistudymultimodule.feature.compose.mainhome.view.ImageEmptyView
 import com.my.mvistudymultimodule.feature.compose.moviedetail.event.ComposeMovieDetailScreenEvent
 import com.my.mvistudymultimodule.feature.compose.moviedetail.event.ComposeMovieDetailViewModelEvent
+import com.my.mvistudymultimodule.feature.compose.moviedetail.event.SaveMovieDetailErrorUiEvent
 import com.my.mvistudymultimodule.feature.compose.moviedetail.state.MovieDetailUiState
 import com.my.mvistudymultimodule.feature.compose.moviedetail.viewmodel.ComposeMovieDetailViewModel
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.glide.GlideImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun ComposeMovieDetailScreen(
@@ -74,6 +77,26 @@ fun ComposeMovieDetailScreen(
 
     val movieDetailUiState = composeMovieDetailViewModel.movieDetailUiEvent.collectAsState().value
 
+    LaunchedEffect(Unit) {
+        composeMovieDetailViewModel.saveMovieDetailErrorUiEvent.collectLatest { event ->
+            when (event) {
+                is SaveMovieDetailErrorUiEvent.ConnectionError -> {
+
+                }
+                is SaveMovieDetailErrorUiEvent.DataEmpty -> {
+
+                }
+                is SaveMovieDetailErrorUiEvent.ExceptionHandle -> {
+
+                }
+                is SaveMovieDetailErrorUiEvent.Fail -> {
+
+                }
+                is SaveMovieDetailErrorUiEvent.Idle -> {}
+            }
+        }
+    }
+
     ComposeMovieDetailUI(
         localContext = localContext,
         scope = scope,
@@ -91,6 +114,12 @@ fun ComposeMovieDetailScreen(
                 is ComposeMovieDetailViewModelEvent.GetMovieDetail -> {
                     composeMovieDetailViewModel.handleViewModelEvent(it)
                 }
+                is ComposeMovieDetailViewModelEvent.SaveMovieDetail -> {
+                    composeMovieDetailViewModel.handleViewModelEvent(it)
+                }
+                is ComposeMovieDetailViewModelEvent.DeleteMovieDetail -> {
+                    composeMovieDetailViewModel.handleViewModelEvent(it)
+                }
             }
         },
         movieDetailUiState = movieDetailUiState
@@ -100,8 +129,8 @@ fun ComposeMovieDetailScreen(
         if(initExecute.value) {
             initExecute.value = false
             composeMovieDetailViewModel.handleViewModelEvent(ComposeMovieDetailViewModelEvent.GetMovieDetail(movieId = movieId, movieInfo = movieInfo))
-            delay(3000L)
-            navController.navigate(route = NavigationScreenName.TestScreen.name)
+//            delay(3000L)
+//            navController.navigate(route = NavigationScreenName.TestScreen.name)
         }
     }
 }
@@ -128,10 +157,14 @@ fun ComposeMovieDetailUI(
                 onBackClick = {
                     composeMovieDetailScreenEvent.invoke(ComposeMovieDetailScreenEvent.OnBackClick())
                 },
-                onSearchClick = {
-
+                onSaveMovieClick = {
+                    composeMovieDetailViewModelEvent.invoke(ComposeMovieDetailViewModelEvent.SaveMovieDetail(it))
                 },
-                title = movieDetailUiState.movieDetail?.title?:"-"
+                onDeleteMovieClick = {
+                    composeMovieDetailViewModelEvent.invoke(ComposeMovieDetailViewModelEvent.DeleteMovieDetail(it))
+                },
+                title = movieDetailUiState.movieDetail?.title?:"-",
+                movieDetailUiState = movieDetailUiState
             )
 
             Column(
@@ -188,8 +221,10 @@ fun ComposeMovieDetailUI(
 fun HeaderView(
     localContext: Context,
     onBackClick: () -> Unit,
-    onSearchClick: () -> Unit,
-    title: String
+    onSaveMovieClick: (MovieDetailModel) -> Unit,
+    onDeleteMovieClick: (MovieDetailModel) -> Unit,
+    title: String,
+    movieDetailUiState: MovieDetailUiState
 ) {
     val headerViewHeight = rememberSaveable {
         mutableIntStateOf(60)
@@ -216,10 +251,7 @@ fun HeaderView(
         Column(
             modifier = Modifier
                 .weight(1f)
-                .height(headerViewHeight.value.dp)
-                .clickable {
-                    onSearchClick.invoke()
-                },
+                .height(headerViewHeight.value.dp),
             verticalArrangement = Arrangement.Center
         ) {
             Text(
@@ -234,12 +266,22 @@ fun HeaderView(
             modifier = Modifier
                 .height(headerViewHeight.value.dp),
             onClick = {
-                onSearchClick.invoke()
+                movieDetailUiState.movieDetail?.let {
+                    if(movieDetailUiState.isSaveState) {
+                        onDeleteMovieClick.invoke(it)
+                    } else {
+                        onSaveMovieClick.invoke(it)
+                    }
+                }
             }
         ) {
             Image(
-                painter = painterResource(com.my.mvistudymultimodule.core.base.R.drawable.ic_save_24_000000),
-                contentDescription = "Search"
+                painter = if(movieDetailUiState.isSaveState){
+                    painterResource(com.my.mvistudymultimodule.core.base.R.drawable.ic_star_24_000000)
+                } else {
+                    painterResource(com.my.mvistudymultimodule.core.base.R.drawable.ic_save_24_000000)
+                },
+                contentDescription = "SaveMovie"
             )
         }
     }

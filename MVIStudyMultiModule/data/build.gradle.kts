@@ -59,6 +59,7 @@ dependencies {
 
     /* Module */
     implementation(project(":core:base"))
+    implementation(project(":core:database"))
     implementation(project(":core:model"))
     implementation(project(":domain"))
 

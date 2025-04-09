@@ -6,8 +6,6 @@ import com.google.gson.annotations.SerializedName
 
 @Entity(tableName = "MovieDetailEntity")
 data class MovieDetailModel(
-    @PrimaryKey(autoGenerate = true)
-    val idx: Int,
     @SerializedName("adult")
     val adult: Boolean,
     @SerializedName("backdrop_path")
@@ -20,6 +18,7 @@ data class MovieDetailModel(
     val genres: List<Genre>,
     @SerializedName("homepage")
     val homepage: String,
+    @PrimaryKey
     @SerializedName("id")
     val id: Int,
     @SerializedName("imdb_id")

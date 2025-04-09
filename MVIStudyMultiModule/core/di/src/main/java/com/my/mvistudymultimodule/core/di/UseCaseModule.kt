@@ -1,9 +1,12 @@
 package com.my.mvistudymultimodule.core.di
 
 import com.my.mvistudymultimodule.domain.repository.MovieRepository
+import com.my.mvistudymultimodule.domain.usecase.CheckMovieDetailUseCase
+import com.my.mvistudymultimodule.domain.usecase.DeleteMovieDetailUseCase
 import com.my.mvistudymultimodule.domain.usecase.GetMovieDetailUseCase
 import com.my.mvistudymultimodule.domain.usecase.GetPopularMovieUseCase
 import com.my.mvistudymultimodule.domain.usecase.GetSearchMovieUseCase
+import com.my.mvistudymultimodule.domain.usecase.SaveMovieDetailUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,6 +38,30 @@ object UseCaseModule {
         movieRepository: MovieRepository
     ): GetMovieDetailUseCase {
         return GetMovieDetailUseCase(movieRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSaveMovieDetailUseCase(
+        movieRepository: MovieRepository
+    ): SaveMovieDetailUseCase {
+        return SaveMovieDetailUseCase(movieRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDeleteMovieDetailUseCase(
+        movieRepository: MovieRepository
+    ): DeleteMovieDetailUseCase {
+        return DeleteMovieDetailUseCase(movieRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCheckMovieDetailUseCase(
+        movieRepository: MovieRepository
+    ): CheckMovieDetailUseCase {
+        return CheckMovieDetailUseCase(movieRepository)
     }
 
 //    @Provides

@@ -11,4 +11,8 @@ interface MovieRepository {
     suspend fun getPopularMoviePaging(language: String): Flow<PagingData<MovieModel. MovieModelResult>>
     suspend fun getSearchMovie(query: String, language: String, page: Int): Flow<RequestResult<MovieModel>>
     suspend fun getMovieDetail(movieId: Int, language: String): Flow<RequestResult<MovieDetailModel>>
+
+    suspend fun saveMovieDetail(movieDetail: MovieDetailModel): Flow<RequestResult<Boolean>>
+    suspend fun deleteMovieDetail(movieDetail: MovieDetailModel): Flow<RequestResult<Boolean>>
+    suspend fun checkMovieDetail(movieId: Int): Flow<RequestResult<Boolean>>
 }
