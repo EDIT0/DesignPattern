@@ -5,6 +5,7 @@ import com.my.mvistudymultimodule.domain.usecase.CheckMovieDetailUseCase
 import com.my.mvistudymultimodule.domain.usecase.DeleteMovieDetailUseCase
 import com.my.mvistudymultimodule.domain.usecase.GetMovieDetailUseCase
 import com.my.mvistudymultimodule.domain.usecase.GetPopularMovieUseCase
+import com.my.mvistudymultimodule.domain.usecase.GetSavedMovieUseCase
 import com.my.mvistudymultimodule.domain.usecase.GetSearchMovieUseCase
 import com.my.mvistudymultimodule.domain.usecase.SaveMovieDetailUseCase
 import dagger.Module
@@ -62,6 +63,14 @@ object UseCaseModule {
         movieRepository: MovieRepository
     ): CheckMovieDetailUseCase {
         return CheckMovieDetailUseCase(movieRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetSavedMovieUseCase(
+        movieRepository: MovieRepository
+    ): GetSavedMovieUseCase {
+        return GetSavedMovieUseCase(movieRepository)
     }
 
 //    @Provides

@@ -15,4 +15,5 @@ interface MovieRepository {
     suspend fun saveMovieDetail(movieDetail: MovieDetailModel): Flow<RequestResult<Boolean>>
     suspend fun deleteMovieDetail(movieDetail: MovieDetailModel): Flow<RequestResult<Boolean>>
     suspend fun checkMovieDetail(movieId: Int): Flow<RequestResult<Boolean>>
+    fun getSavedMoviePaging(): Flow<PagingData<MovieDetailModel>>
 }

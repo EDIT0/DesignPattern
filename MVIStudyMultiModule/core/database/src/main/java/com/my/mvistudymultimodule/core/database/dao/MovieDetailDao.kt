@@ -1,6 +1,7 @@
 package com.my.mvistudymultimodule.core.database.dao
 
 import androidx.lifecycle.LiveData
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -18,6 +19,10 @@ interface MovieDetailDao {
 
     @Query("SELECT EXISTS(SELECT 1 FROM MovieDetailEntity WHERE id = :movieId)")
     suspend fun checkMovieDetail(movieId: Int): Boolean
+
+    @Query("SELECT * FROM MovieDetailEntity")
+    fun getSavedMoviePaging(): PagingSource<Int, MovieDetailModel>
+
 
 //    @Query("SELECT * FROM saved_movies")
 //    fun getAllSavedMovies() : Flow<List<MovieModelResult>>

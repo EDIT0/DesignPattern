@@ -133,4 +133,8 @@ class MovieRepositoryImpl @Inject constructor(
             throw Exception(it)
         }
     }
+
+    override fun getSavedMoviePaging(): Flow<PagingData<MovieDetailModel>> {
+        return movieLocalDataSource.getSavedMoviePaging()
+    }
 }

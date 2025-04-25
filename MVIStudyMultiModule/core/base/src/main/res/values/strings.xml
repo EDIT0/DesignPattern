@@ -14,4 +14,7 @@
     <!-- MainHome -->
     <string name="main_home_movie_search">영화 검색</string>
 
+    <!-- SavedMovie -->
+    <string name="saved_movie_title">저장 목록</string>
+
 </resources>

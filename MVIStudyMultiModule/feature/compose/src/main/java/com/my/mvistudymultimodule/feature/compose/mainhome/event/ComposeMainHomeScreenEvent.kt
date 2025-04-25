@@ -6,4 +6,5 @@ sealed interface ComposeMainHomeScreenEvent {
     class OnBackClick() : ComposeMainHomeScreenEvent
     class OnSearchClick(): ComposeMainHomeScreenEvent
     class OnMovieClick(val movieInfo: MovieModel.MovieModelResult): ComposeMainHomeScreenEvent
+    class OnSavedMovieFloatingButtonClick(): ComposeMainHomeScreenEvent
 }

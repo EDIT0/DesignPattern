@@ -11,7 +11,7 @@ data class MovieDetailModel(
     @SerializedName("backdrop_path")
     val backdropPath: String,
     @SerializedName("belongs_to_collection")
-    val belongsToCollection: BelongsToCollection,
+    val belongsToCollection: BelongsToCollection? = null,
     @SerializedName("budget")
     val budget: Int,
     @SerializedName("genres")

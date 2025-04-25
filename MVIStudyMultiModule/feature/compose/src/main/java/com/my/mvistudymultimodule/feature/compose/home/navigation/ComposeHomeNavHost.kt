@@ -19,6 +19,7 @@ import com.my.mvistudymultimodule.feature.compose.home.viewmodel.ComposeHomeView
 import com.my.mvistudymultimodule.feature.compose.mainhome.view.ComposeMainHomeScreen
 import com.my.mvistudymultimodule.feature.compose.moviedetail.view.ComposeMovieDetailScreen
 import com.my.mvistudymultimodule.feature.compose.moviedetail.view.TestScreen
+import com.my.mvistudymultimodule.feature.compose.savedmovie.view.ComposeSavedMovieScreen
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
@@ -81,6 +82,17 @@ fun ComposeHomeNavHost(
                     movieInfo = movieInfo
                 )
             }
+        }
+
+        /* ComposeSavedMovieScreen */
+        composable(
+            route = NavigationScreenName.ComposeSavedMovieScreen.name
+        ) {
+            ComposeSavedMovieScreen(
+                navController = navHostController,
+                composeHomeViewModel = composeHomeViewModel,
+                intent = intent
+            )
         }
 
         /* TestScreen */
