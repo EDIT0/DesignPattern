@@ -31,10 +31,10 @@ class MovieLocalDataSourceImpl @Inject constructor(
     override fun getSavedMoviePaging(): Flow<PagingData<MovieDetailModel>> {
         return Pager(
             config = PagingConfig(
-                pageSize = 20,
-                prefetchDistance = 10,
+                pageSize = 10,
+                prefetchDistance = 5,
                 enablePlaceholders = false,
-                initialLoadSize = 20,
+                initialLoadSize = 10,
                 maxSize = 10000,
 //                jumpThreshold =
             ),
@@ -42,10 +42,10 @@ class MovieLocalDataSourceImpl @Inject constructor(
             // 사용할 메소드 선언
             pagingSourceFactory = {
                 movieDetailDao.getSavedMoviePaging()
+//                GetSavedMoviePagingSource(movieDetailDao)
             }
         ).flow
             .map { pagingData ->
-                delay(1000L)
                 pagingData
             }
             .catch {

@@ -20,8 +20,14 @@ interface MovieDetailDao {
     @Query("SELECT EXISTS(SELECT 1 FROM MovieDetailEntity WHERE id = :movieId)")
     suspend fun checkMovieDetail(movieId: Int): Boolean
 
-    @Query("SELECT * FROM MovieDetailEntity")
+    @Query("SELECT * FROM MovieDetailEntity ORDER BY id ASC")
     fun getSavedMoviePaging(): PagingSource<Int, MovieDetailModel>
+
+    @Query("SELECT COUNT(*) FROM MovieDetailEntity")
+    suspend fun getSavedMovieCount(): Int
+
+//    @Query("SELECT * FROM MovieDetailEntity ORDER BY id ASC LIMIT :limit OFFSET :offset")
+//    suspend fun getSavedMoviePaging(limit: Int, offset: Int): List<MovieDetailModel>
 
 
 //    @Query("SELECT * FROM saved_movies")

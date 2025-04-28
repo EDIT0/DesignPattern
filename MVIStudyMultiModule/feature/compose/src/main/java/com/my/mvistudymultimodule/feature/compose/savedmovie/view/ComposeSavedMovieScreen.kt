@@ -51,13 +51,10 @@ import com.my.mvistudymultimodule.core.base.NavigationScreenName
 import com.my.mvistudymultimodule.core.base.R
 import com.my.mvistudymultimodule.core.di.BuildConfig
 import com.my.mvistudymultimodule.core.model.MovieDetailModel
-import com.my.mvistudymultimodule.core.model.MovieModel
 import com.my.mvistudymultimodule.core.util.LogUtil
 import com.my.mvistudymultimodule.feature.compose.home.view.ui.theme.grey300
 import com.my.mvistudymultimodule.feature.compose.home.view.ui.theme.white
 import com.my.mvistudymultimodule.feature.compose.home.viewmodel.ComposeHomeViewModel
-import com.my.mvistudymultimodule.feature.compose.mainhome.event.ComposeMainHomeScreenEvent
-import com.my.mvistudymultimodule.feature.compose.mainhome.event.ComposeMainHomeViewModelEvent
 import com.my.mvistudymultimodule.feature.compose.savedmovie.event.ComposeSavedMovieHomeScreenEvent
 import com.my.mvistudymultimodule.feature.compose.savedmovie.event.ComposeSavedMovieViewModelEvent
 import com.my.mvistudymultimodule.feature.compose.savedmovie.viewmodel.ComposeSavedMovieViewModel
@@ -86,6 +83,7 @@ fun ComposeSavedMovieScreen(
     }
 
     val savedMovieListPagingUiState = composeSavedMovieViewModel.savedMovieListPagingUiState.collectAsState().value
+    val savedMoviePaging = savedMovieListPagingUiState.savedMovieList?.collectAsLazyPagingItems()
 
     ComposeSavedMovieUI(
         localContext = localContext,
@@ -105,7 +103,7 @@ fun ComposeSavedMovieScreen(
                 }
             }
         },
-        savedMovieListPaging = savedMovieListPagingUiState.savedMovieList?.collectAsLazyPagingItems()
+        savedMovieListPaging = savedMoviePaging
     )
 
     LaunchedEffect(Unit) {
@@ -143,7 +141,12 @@ fun ComposeSavedMovieUI(
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                items(savedMovieListPaging?.itemCount ?: 0) { index ->
+                items(
+                    count = savedMovieListPaging?.itemCount ?: 0,
+                    key = { index -> // Movie ID 기준으로 데이터를 비교하여 필요한 부분만 업데이트
+                        savedMovieListPaging?.get(index)?.id ?: index
+                    }
+                ) { index ->
                     savedMovieListPaging?.get(index)?.let { movie ->
                         MovieListItemView(
                             movieInfo = movie,
@@ -355,7 +358,7 @@ fun MovieListItemView(
                 Text(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    text = movieInfo.title.toString()
+                    text = movieInfo.originalTitle.toString()
                 )
             }
 

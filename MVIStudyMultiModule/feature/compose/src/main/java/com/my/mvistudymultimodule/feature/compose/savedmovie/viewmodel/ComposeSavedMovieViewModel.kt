@@ -6,15 +6,15 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
 import com.my.mvistudymultimodule.core.base.BaseAndroidViewModel
+import com.my.mvistudymultimodule.core.model.MovieDetailModel
 import com.my.mvistudymultimodule.core.util.LogUtil
 import com.my.mvistudymultimodule.domain.usecase.GetSavedMovieUseCase
-import com.my.mvistudymultimodule.feature.compose.mainhome.event.MovieListPagingUiEvent
-import com.my.mvistudymultimodule.feature.compose.mainhome.state.MovieListPagingUiState
 import com.my.mvistudymultimodule.feature.compose.savedmovie.event.ComposeSavedMovieViewModelEvent
 import com.my.mvistudymultimodule.feature.compose.savedmovie.event.SavedMovieListPagingUiEvent
 import com.my.mvistudymultimodule.feature.compose.savedmovie.state.SavedMovieListPagingUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -39,7 +39,7 @@ class ComposeSavedMovieViewModel @Inject constructor(
         SavedMovieListPagingUiState()
     ) { state, event ->
         when(event) {
-            SavedMovieListPagingUiEvent.Idle -> {
+            is SavedMovieListPagingUiEvent.Idle -> {
                 state.copy(savedMovieList = MutableStateFlow(value = PagingData.empty()))
             }
             is SavedMovieListPagingUiEvent.UpdateSavedMovieList -> {
