@@ -10,5 +10,6 @@ interface MovieRemoteDataSource {
     suspend fun getPopularMovie(language: String, page: Int): Response<MovieModel>
     suspend fun getPopularMoviePaging(language: String): Flow<PagingData<MovieModel.MovieModelResult>>
     suspend fun getSearchMovie(query: String, language: String, page: Int): Response<MovieModel>
+    suspend fun getSearchMoviePaging(query: String, language: String): Flow<PagingData<MovieModel.MovieModelResult>>
     suspend fun getMovieDetail(movieId: Int, language: String): Response<MovieDetailModel>
 }

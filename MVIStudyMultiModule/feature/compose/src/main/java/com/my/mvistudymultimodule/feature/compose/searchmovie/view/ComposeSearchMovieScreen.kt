@@ -1,14 +1,13 @@
-package com.my.mvistudymultimodule.feature.compose.mainhome.view
+package com.my.mvistudymultimodule.feature.compose.searchmovie.view
 
 import android.content.Context
 import android.content.Intent
-import androidx.activity.ComponentActivity
+import android.view.View
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -17,11 +16,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -30,17 +28,28 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -52,29 +61,41 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.gson.Gson
 import com.my.mvistudymultimodule.core.base.ComposeCustomScreen
 import com.my.mvistudymultimodule.core.base.NavigationScreenName
+import com.my.mvistudymultimodule.core.base.R
+import com.my.mvistudymultimodule.core.di.BuildConfig
 import com.my.mvistudymultimodule.core.model.MovieModel
 import com.my.mvistudymultimodule.core.util.LogUtil
+import com.my.mvistudymultimodule.core.util.ToastUtil
+import com.my.mvistudymultimodule.core.util.dpToSp
 import com.my.mvistudymultimodule.feature.compose.home.view.ui.theme.grey300
+import com.my.mvistudymultimodule.feature.compose.home.view.ui.theme.grey500
 import com.my.mvistudymultimodule.feature.compose.home.view.ui.theme.white
 import com.my.mvistudymultimodule.feature.compose.home.viewmodel.ComposeHomeViewModel
-import com.my.mvistudymultimodule.feature.compose.mainhome.event.ComposeMainHomeScreenEvent
-import com.my.mvistudymultimodule.feature.compose.mainhome.event.ComposeMainHomeViewModelEvent
-import com.my.mvistudymultimodule.feature.compose.mainhome.state.MovieListPagingUiState
-import com.my.mvistudymultimodule.feature.compose.mainhome.viewmodel.ComposeMainHomeViewModel
+import com.my.mvistudymultimodule.feature.compose.savedmovie.event.ComposeSavedMovieViewModelEvent
+import com.my.mvistudymultimodule.feature.compose.searchmovie.event.ComposeSearchMovieScreenEvent
+import com.my.mvistudymultimodule.feature.compose.searchmovie.event.ComposeSearchMovieViewModelEvent
+import com.my.mvistudymultimodule.feature.compose.searchmovie.state.SearchUiState
+import com.my.mvistudymultimodule.feature.compose.searchmovie.viewmodel.ComposeSearchMovieViewModel
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.glide.GlideImage
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 @Composable
-fun ComposeMainHomeScreen(
+fun ComposeSearchMovieScreen(
     navController: NavController,
     composeHomeViewModel: ComposeHomeViewModel,
-    composeMainHomeViewModel: ComposeMainHomeViewModel = hiltViewModel(),
+    composeSearchMovieViewModel: ComposeSearchMovieViewModel = hiltViewModel(),
     intent: Intent
 ) {
+
+    val localView = LocalView.current
     val localContext = LocalContext.current
+    val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()
 
     /**
@@ -84,20 +105,22 @@ fun ComposeMainHomeScreen(
         mutableStateOf(true)
     }
 
-    val movieListPagingUiState = composeMainHomeViewModel.movieListPagingUiState.collectAsState().value
+    val sideEffectEvent = composeSearchMovieViewModel.sideEffectEvent
+    val searchUiState = composeSearchMovieViewModel.searchStateUiEvent.collectAsState().value
+    val searchUiStatePaging = searchUiState.searchMovieList?.collectAsLazyPagingItems()
 
-    ComposeMainHomeUI(
+    ComposeSearchMovieScreenUI(
+        localView = localView,
         localContext = localContext,
+        focusManager = focusManager,
         scope = scope,
-        composeMainHomeScreenEvent = {
-            when (it) {
-                is ComposeMainHomeScreenEvent.OnBackClick -> {
-                    if (localContext is ComponentActivity) {
-                        localContext.finish()
-                    }
+        initExecute = initExecute,
+        composeSearchMovieScreenEvent = {
+            when(it) {
+                is ComposeSearchMovieScreenEvent.OnBackClick -> {
+                    navController.popBackStack()
                 }
-
-                is ComposeMainHomeScreenEvent.OnMovieClick -> {
+                is ComposeSearchMovieScreenEvent.OnMovieClick -> {
                     LogUtil.d_dev("영화 클릭: ${it.movieInfo.title}")
                     val movieInfoStr = URLEncoder.encode(
                         Gson().toJson(it.movieInfo),
@@ -105,44 +128,42 @@ fun ComposeMainHomeScreen(
                     )
                     navController.navigate(route = "${NavigationScreenName.ComposeMovieDetailScreen.name}/${it.movieInfo.id}/${movieInfoStr}")
                 }
-
-                is ComposeMainHomeScreenEvent.OnSearchClick -> {
-                    LogUtil.d_dev("검색 클릭")
-                    navController.navigate(route = "${NavigationScreenName.ComposeSearchMovieScreen.name}")
+            }
+        },
+        composeSearchMovieViewModelEvent = {
+            when(it) {
+                is ComposeSearchMovieViewModelEvent.GetSearchMovie -> {
+                    composeSearchMovieViewModel.handleViewModelEvent(it)
                 }
-
-                is ComposeMainHomeScreenEvent.OnSavedMovieFloatingButtonClick -> {
-                    navController.navigate(route = "${NavigationScreenName.ComposeSavedMovieScreen.name}")
+                is ComposeSearchMovieViewModelEvent.SaveCurrentSearchKeyword -> {
+                    composeSearchMovieViewModel.handleViewModelEvent(it)
                 }
             }
         },
-        composeMainHomeViewModelEvent = {
-            when (it) {
-                is ComposeMainHomeViewModelEvent.GetPopularMovie -> {
-                    composeMainHomeViewModel.handleViewModelEvent(it)
-                }
-            }
-        },
-        movieListPagingUiState = movieListPagingUiState,
-        movieListPaging = movieListPagingUiState.movieList?.collectAsLazyPagingItems()
+        sideEffectEvent = sideEffectEvent,
+        searchUiState = searchUiState,
+        searchUiStatePaging = searchUiStatePaging
     )
 
     LaunchedEffect(Unit) {
         if (initExecute.value) {
             initExecute.value = false
-            composeMainHomeViewModel.handleViewModelEvent(ComposeMainHomeViewModelEvent.GetPopularMovie())
         }
     }
 }
 
 @Composable
-fun ComposeMainHomeUI(
+fun ComposeSearchMovieScreenUI(
+    localView: View,
     localContext: Context,
+    focusManager: FocusManager,
     scope: CoroutineScope,
-    composeMainHomeScreenEvent: (ComposeMainHomeScreenEvent) -> Unit,
-    composeMainHomeViewModelEvent: (ComposeMainHomeViewModelEvent) -> Unit,
-    movieListPagingUiState: MovieListPagingUiState,
-    movieListPaging: LazyPagingItems<MovieModel.MovieModelResult>?
+    initExecute: MutableState<Boolean>,
+    composeSearchMovieScreenEvent: (ComposeSearchMovieScreenEvent) -> Unit,
+    composeSearchMovieViewModelEvent: (ComposeSearchMovieViewModelEvent) -> Unit,
+    sideEffectEvent: Flow<ComposeSearchMovieViewModel.SideEffectEvent>,
+    searchUiState: SearchUiState,
+    searchUiStatePaging: LazyPagingItems<MovieModel.MovieModelResult>?
 ) {
 
     // LoadingView 제어
@@ -150,6 +171,8 @@ fun ComposeMainHomeUI(
         mutableStateOf(false)
     }
 
+    val listState = rememberLazyListState()
+    
     ComposeCustomScreen(
         backgroundColor = white()
     ) {
@@ -157,24 +180,33 @@ fun ComposeMainHomeUI(
             HeaderView(
                 localContext = localContext,
                 onBackClick = {
-                    composeMainHomeScreenEvent.invoke(ComposeMainHomeScreenEvent.OnBackClick())
+                    composeSearchMovieScreenEvent.invoke(ComposeSearchMovieScreenEvent.OnBackClick())
                 },
                 onSearchClick = {
-                    composeMainHomeScreenEvent.invoke(ComposeMainHomeScreenEvent.OnSearchClick())
-                }
+                    composeSearchMovieViewModelEvent.invoke(ComposeSearchMovieViewModelEvent.GetSearchMovie())
+                },
+                searchUiState = searchUiState,
+                composeSearchMovieViewModelEvent = composeSearchMovieViewModelEvent,
+                initExecute = initExecute
             )
 
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxSize(),
+                state = listState
             ) {
-                items(movieListPaging?.itemCount ?: 0) { index ->
-                    movieListPaging?.get(index)?.let { movie ->
+                items(
+                    count = searchUiStatePaging?.itemCount ?: 0,
+                    key = { index -> // Movie ID 기준으로 데이터를 비교하여 필요한 부분만 업데이트
+                        searchUiStatePaging?.get(index)?.id ?: index
+                    }
+                ) { index ->
+                    searchUiStatePaging?.get(index)?.let { movie ->
                         MovieListItemView(
                             movieInfo = movie,
                             onClick = { item ->
-                                composeMainHomeScreenEvent.invoke(
-                                    ComposeMainHomeScreenEvent.OnMovieClick(
+                                composeSearchMovieScreenEvent.invoke(
+                                    ComposeSearchMovieScreenEvent.OnMovieClick(
                                         movieInfo = item
                                     )
                                 )
@@ -183,7 +215,18 @@ fun ComposeMainHomeUI(
                     }
                 }
 
-                movieListPaging?.loadState?.let { loadStatus ->
+                // 데이터가 없을 경우
+                if(searchUiStatePaging?.itemCount == 0) {
+                    item {
+                        PagingDataEmptyView(
+                            localContext = localContext,
+                            searchKeyword = searchUiState.searchKeyword?:"",
+                            isShowLoading = isShowLoading
+                        )
+                    }
+                }
+
+                searchUiStatePaging?.loadState?.let { loadStatus ->
                     LogUtil.i_dev("addLoadStateListener ${loadStatus}")
 
                     when (loadStatus.source.append) {
@@ -193,10 +236,9 @@ fun ComposeMainHomeUI(
                                 RetryView(
                                     localContext = localContext,
                                     retry = {
-                                        movieListPaging.retry()
+                                        searchUiStatePaging.retry()
                                     },
-                                    message = (loadStatus.source.append as LoadState.Error).error.localizedMessage
-                                        ?: ""
+                                    message = (loadStatus.source.append as LoadState.Error).error.localizedMessage ?: ""
                                 )
                             }
                         }
@@ -219,7 +261,7 @@ fun ComposeMainHomeUI(
                                 RetryView(
                                     localContext = localContext,
                                     retry = {
-                                        movieListPaging.retry()
+                                        searchUiStatePaging.retry()
                                     },
                                     message = (loadStatus.source.prepend as LoadState.Error).error.localizedMessage
                                         ?: ""
@@ -242,18 +284,13 @@ fun ComposeMainHomeUI(
                                 RetryView(
                                     localContext = localContext,
                                     retry = {
-                                        movieListPaging.retry()
+                                        searchUiStatePaging.retry()
                                     },
                                     message = (loadStatus.source.refresh as LoadState.Error).error.localizedMessage
                                         ?: ""
                                 )
                             }
                             isShowLoading.value = false
-//
-//                            if(xmlMainHomeVM.getMovieListPagingAdapter().itemCount == 0) {
-//                                binding.tvMovieListEmpty.visibility = View.VISIBLE
-//                                binding.rvMovie.visibility = View.GONE
-//                            }
                         }
 
                         is LoadState.Loading -> {
@@ -261,8 +298,6 @@ fun ComposeMainHomeUI(
                             item {
                                 ListLoadingView()
                             }
-//                            binding.tvMovieListEmpty.visibility = View.GONE
-//                            binding.rvMovie.visibility = View.VISIBLE
                         }
 
                         is LoadState.NotLoading -> {
@@ -271,30 +306,6 @@ fun ComposeMainHomeUI(
                     }
                 }
             }
-        }
-
-        // 플로팅 버튼
-        Box(
-            modifier = Modifier
-                .padding(end = 20.dp, bottom = 50.dp)
-                .align(Alignment.BottomEnd)
-                .clickable {
-                    composeMainHomeScreenEvent.invoke(ComposeMainHomeScreenEvent.OnSavedMovieFloatingButtonClick())
-                }
-//            contentAlignment = Alignment.BottomEnd
-        ) {
-            Column(
-                modifier = Modifier
-                    .wrapContentWidth()
-                    .background(color = grey300(), shape = CircleShape)
-                    .padding(15.dp)
-            ) {
-                Icon(
-                    painter = painterResource(id = com.my.mvistudymultimodule.core.base.R.drawable.ic_save_24_000000),
-                    contentDescription = ""
-                )
-            }
-
         }
 
         // 스크린 전체 로딩뷰
@@ -309,8 +320,29 @@ fun ComposeMainHomeUI(
         )
     }
 
+    // 현재 스크롤 위치
+    LaunchedEffect(listState) {
+        snapshotFlow {
+            listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset
+        }.collect { (index, offset) ->
+            LogUtil.d_dev("현재 인덱스: $index, 스크롤 위치 오프셋: $offset")
+            focusManager.clearFocus()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        sideEffectEvent.collect {
+            when(it) {
+                is ComposeSearchMovieViewModel.SideEffectEvent.Idle -> {}
+                is ComposeSearchMovieViewModel.SideEffectEvent.Toast -> {
+                    ToastUtil.makeToast(localView, it.message)
+                }
+            }
+        }
+    }
+
     BackHandler {
-        composeMainHomeScreenEvent.invoke(ComposeMainHomeScreenEvent.OnBackClick())
+        composeSearchMovieScreenEvent.invoke(ComposeSearchMovieScreenEvent.OnBackClick())
     }
 }
 
@@ -318,10 +350,27 @@ fun ComposeMainHomeUI(
 fun HeaderView(
     localContext: Context,
     onBackClick: () -> Unit,
-    onSearchClick: () -> Unit
+    onSearchClick: () -> Unit,
+    composeSearchMovieViewModelEvent: (ComposeSearchMovieViewModelEvent) -> Unit,
+    searchUiState: SearchUiState,
+    initExecute: MutableState<Boolean>
 ) {
     val headerViewHeight = rememberSaveable {
         mutableIntStateOf(60)
+    }
+
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusRequester = remember { FocusRequester() }
+    val isTextBoxFocused = rememberSaveable { mutableStateOf(false) }
+
+    // 키보드 올리기
+    LaunchedEffect(Unit) {
+        if(initExecute.value) {
+            delay(100L)
+            focusRequester.requestFocus()
+            keyboardController?.show()
+            LogUtil.d_dev("MYTAG 키보드 올리기")
+        }
     }
 
     Row(
@@ -337,37 +386,69 @@ fun HeaderView(
             }
         ) {
             Image(
-                painter = painterResource(com.my.mvistudymultimodule.core.base.R.drawable.ic_arrow_back_ios_new_24_000000),
+                painter = painterResource(R.drawable.ic_arrow_back_ios_new_24_000000),
                 contentDescription = "Back"
             )
         }
 
-        Column(
+        BasicTextField(
             modifier = Modifier
                 .weight(1f)
                 .height(headerViewHeight.value.dp)
-                .clickable {
-                    onSearchClick.invoke()
+                .focusRequester(focusRequester)
+                .onFocusChanged { focusState ->
+                    isTextBoxFocused.value = focusState.isFocused
                 },
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
+            value = searchUiState.searchKeyword?:"",
+            onValueChange = {
+                composeSearchMovieViewModelEvent.invoke(ComposeSearchMovieViewModelEvent.SaveCurrentSearchKeyword(searchKeyword = it, isDirectSearch = false))
+            },
+            singleLine = true,
+            textStyle = TextStyle(fontSize = dpToSp(dp = 20.dp)),
+            decorationBox = { innerTextField ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if(isTextBoxFocused.value) {
+                        innerTextField()
+                    } else if(searchUiState.searchKeyword.isNullOrBlank()) {
+                        Text(
+                            text = localContext.getString(R.string.search_movie_hint),
+                            color = grey500()
+                        )
+                    } else {
+                        innerTextField()
+                    }
+                }
+            }
+        )
+
+        if(searchUiState.searchKeyword?.isNotEmpty() == true) {
+            IconButton(
                 modifier = Modifier
-                    .wrapContentHeight()
-                    .padding(horizontal = 5.dp),
-                text = localContext.getString(com.my.mvistudymultimodule.core.base.R.string.main_home_movie_search)
-            )
+                    .height(headerViewHeight.value.dp),
+                onClick = {
+                    composeSearchMovieViewModelEvent.invoke(ComposeSearchMovieViewModelEvent.SaveCurrentSearchKeyword(searchKeyword = "", isDirectSearch = false))
+                }
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.ic_cancel_24_000000),
+                    contentDescription = "Search"
+                )
+            }
         }
 
         IconButton(
             modifier = Modifier
                 .height(headerViewHeight.value.dp),
             onClick = {
-                onSearchClick.invoke()
+                composeSearchMovieViewModelEvent.invoke(ComposeSearchMovieViewModelEvent.SaveCurrentSearchKeyword(searchKeyword = searchUiState.searchKeyword?:"", isDirectSearch = true))
             }
         ) {
             Image(
-                painter = painterResource(com.my.mvistudymultimodule.core.base.R.drawable.ic_search_24_000000),
+                painter = painterResource(R.drawable.ic_search_24_000000),
                 contentDescription = "Search"
             )
         }
@@ -397,9 +478,9 @@ fun MovieListItemView(
                     .padding(5.dp)
                     .clip(MaterialTheme.shapes.extraSmall),
                 imageModel = {
-                    com.my.mvistudymultimodule.core.di.BuildConfig.BASE_MOVIE_POSTER + movieInfo.posterPath
+                    BuildConfig.BASE_MOVIE_POSTER + movieInfo.posterPath
                 },
-                previewPlaceholder = painterResource(id = com.my.mvistudymultimodule.core.base.R.drawable.ic_search_24_000000),
+                previewPlaceholder = painterResource(id = R.drawable.ic_search_24_000000),
                 imageOptions = ImageOptions(
                     alignment = Alignment.TopCenter,
                     contentScale = ContentScale.FillWidth
@@ -421,7 +502,7 @@ fun MovieListItemView(
                 Text(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    text = movieInfo.title.toString()
+                    text = movieInfo.originalTitle.toString()
                 )
             }
 
@@ -484,7 +565,7 @@ fun RetryView(
                 retry.invoke()
             }
         ) {
-            Text(localContext.getString(com.my.mvistudymultimodule.core.base.R.string.common_retry))
+            Text(localContext.getString(R.string.common_retry))
         }
         Text(
             modifier = Modifier
@@ -506,27 +587,69 @@ fun ImageEmptyView() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            painter = painterResource(id = com.my.mvistudymultimodule.core.base.R.drawable.ic_save_24_000000),
+            painter = painterResource(id = R.drawable.ic_save_24_000000),
             contentDescription = "ImageEmptyView"
         )
     }
 }
 
-@Preview
 @Composable
-private fun PreviewImageEmptyView() {
-    ImageEmptyView()
+fun PagingDataEmptyView(
+    localContext: Context,
+    searchKeyword: String,
+    isShowLoading: MutableState<Boolean>
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(white()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if(searchKeyword.isEmpty()) { // 검색어가 없을 경우
+            Text(
+                modifier = Modifier
+                    .padding(vertical = 30.dp),
+                text = localContext.getString(R.string.search_movie_list_state_no_keyword)
+            )
+        } else if(isShowLoading.value) { // 로딩 중일 경우
+            Text(
+                modifier = Modifier
+                    .padding(vertical = 30.dp),
+                text = localContext.getString(R.string.search_movie_list_state_loading)
+            )
+        } else {
+            Text(
+                modifier = Modifier
+                    .padding(vertical = 30.dp),
+                text = localContext.getString(R.string.search_movie_list_state_no_result, searchKeyword)
+            )
+        }
+    }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun ComposeMainHomeScreenPreview() {
-    ComposeMainHomeUI(
+fun PagingDataEmptyViewPreview() {
+    PagingDataEmptyView(
         localContext = LocalContext.current,
+        searchKeyword = "검색어",
+        isShowLoading = rememberSaveable { mutableStateOf(false) },
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ComposeSearchMovieScreenPreview() {
+    ComposeSearchMovieScreenUI(
+        localView = LocalView.current,
+        localContext = LocalContext.current,
+        focusManager = LocalFocusManager.current,
         scope = rememberCoroutineScope(),
-        composeMainHomeScreenEvent = {},
-        composeMainHomeViewModelEvent = {},
-        movieListPagingUiState = MovieListPagingUiState(),
-        movieListPaging = null
+        initExecute = rememberSaveable { mutableStateOf(true) },
+        composeSearchMovieScreenEvent = {},
+        composeSearchMovieViewModelEvent = {},
+        searchUiState = SearchUiState(),
+        searchUiStatePaging = null,
+        sideEffectEvent = flow {  }
     )
 }

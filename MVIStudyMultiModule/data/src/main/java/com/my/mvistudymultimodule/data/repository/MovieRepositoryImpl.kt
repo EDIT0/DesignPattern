@@ -69,6 +69,13 @@ class MovieRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getSearchMoviePaging(
+        query: String,
+        language: String
+    ): Flow<PagingData<MovieModel.MovieModelResult>> {
+        return movieRemoteDataSource.getSearchMoviePaging(query, language)
+    }
+
     override suspend fun getMovieDetail(
         movieId: Int,
         language: String

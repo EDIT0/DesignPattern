@@ -17,4 +17,11 @@
     <!-- SavedMovie -->
     <string name="saved_movie_title">저장 목록</string>
 
+    <!-- SearchMovie -->
+    <string name="search_movie_hint">영화를 검색해주세요</string>
+    <string name="search_movie_list_state_no_keyword">검색어를 입력해 주세요.</string>
+    <string name="search_movie_list_state_loading">검색 중 입니다...</string>
+    <string name="search_movie_list_state_no_result">\'%1$s\' 대한 검색 결과가 없습니다.</string>
+    <string name="search_movie_search_text_length_warning">2글자 이상 입력해 주세요.</string>
+
 </resources>

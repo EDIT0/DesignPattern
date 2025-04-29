@@ -8,6 +8,7 @@ import com.my.mvistudymultimodule.core.model.MovieModel
 import com.my.mvistudymultimodule.data.BuildConfig
 import com.my.mvistudymultimodule.data.api.ApiService
 import com.my.mvistudymultimodule.data.repository.remote.paging.GetPopularMoviePagingSource
+import com.my.mvistudymultimodule.data.repository.remote.paging.GetSearchMoviePagingSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import retrofit2.Response
@@ -51,6 +52,27 @@ class MovieRemoteDataSourceImpl @Inject constructor(
         page: Int
     ): Response<MovieModel> {
         return apiService.getSearchMovie(BuildConfig.API_KEY, query, language, page)
+    }
+
+    override suspend fun getSearchMoviePaging(
+        query: String,
+        language: String
+    ): Flow<PagingData<MovieModel.MovieModelResult>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 10,
+                prefetchDistance = 5,
+                enablePlaceholders = false,
+                initialLoadSize = 10,
+                maxSize = 10000,
+//                jumpThreshold = TODO()
+            ),
+            pagingSourceFactory = {
+                GetSearchMoviePagingSource(apiService, query, language)
+            }
+        ).flow.catch {
+            throw Exception(it)
+        }
     }
 
     override suspend fun getMovieDetail(

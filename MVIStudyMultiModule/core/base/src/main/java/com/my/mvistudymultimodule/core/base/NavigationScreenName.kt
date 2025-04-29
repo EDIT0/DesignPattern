@@ -4,5 +4,6 @@ enum class NavigationScreenName {
     ComposeMainHomeScreen,
     ComposeMovieDetailScreen,
     ComposeSavedMovieScreen,
+    ComposeSearchMovieScreen,
     TestScreen
 }

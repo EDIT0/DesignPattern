@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,9 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.google.gson.Gson
 import com.my.mvistudymultimodule.core.base.ComposeCustomScreen
-import com.my.mvistudymultimodule.core.base.NavigationScreenName
 import com.my.mvistudymultimodule.core.model.MovieDetailModel
 import com.my.mvistudymultimodule.core.model.MovieModel
 import com.my.mvistudymultimodule.core.util.dpToSp
@@ -56,7 +53,6 @@ import com.my.mvistudymultimodule.feature.compose.moviedetail.viewmodel.ComposeM
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.glide.GlideImage
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable

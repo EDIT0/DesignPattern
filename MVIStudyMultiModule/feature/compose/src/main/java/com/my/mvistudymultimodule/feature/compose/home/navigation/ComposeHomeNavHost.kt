@@ -14,12 +14,12 @@ import com.my.mvistudymultimodule.core.base.INTENT_KEY_MOVIE_ID
 import com.my.mvistudymultimodule.core.base.INTENT_KEY_MOVIE_INFO
 import com.my.mvistudymultimodule.core.base.NavigationScreenName
 import com.my.mvistudymultimodule.core.model.MovieModel
-import com.my.mvistudymultimodule.core.util.LogUtil
 import com.my.mvistudymultimodule.feature.compose.home.viewmodel.ComposeHomeViewModel
 import com.my.mvistudymultimodule.feature.compose.mainhome.view.ComposeMainHomeScreen
 import com.my.mvistudymultimodule.feature.compose.moviedetail.view.ComposeMovieDetailScreen
 import com.my.mvistudymultimodule.feature.compose.moviedetail.view.TestScreen
 import com.my.mvistudymultimodule.feature.compose.savedmovie.view.ComposeSavedMovieScreen
+import com.my.mvistudymultimodule.feature.compose.searchmovie.view.ComposeSearchMovieScreen
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
@@ -89,6 +89,17 @@ fun ComposeHomeNavHost(
             route = NavigationScreenName.ComposeSavedMovieScreen.name
         ) {
             ComposeSavedMovieScreen(
+                navController = navHostController,
+                composeHomeViewModel = composeHomeViewModel,
+                intent = intent
+            )
+        }
+
+        /* ComposeSearchMovieScreen */
+        composable(
+            route = NavigationScreenName.ComposeSearchMovieScreen.name
+        ) {
+            ComposeSearchMovieScreen(
                 navController = navHostController,
                 composeHomeViewModel = composeHomeViewModel,
                 intent = intent
