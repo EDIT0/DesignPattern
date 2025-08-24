@@ -12,26 +12,21 @@ import com.my.mvistudymultimodule.domain.usecase.DeleteMovieDetailUseCase
 import com.my.mvistudymultimodule.domain.usecase.GetMovieDetailUseCase
 import com.my.mvistudymultimodule.domain.usecase.SaveMovieDetailUseCase
 import com.my.mvistudymultimodule.feature.compose.moviedetail.event.ComposeMovieDetailViewModelEvent
-import com.my.mvistudymultimodule.feature.compose.moviedetail.event.MovieDetailErrorUiEvent
 import com.my.mvistudymultimodule.feature.compose.moviedetail.event.MovieDetailUiEvent
-import com.my.mvistudymultimodule.feature.compose.moviedetail.event.SaveMovieDetailErrorUiEvent
 import com.my.mvistudymultimodule.feature.compose.moviedetail.state.MovieDetailUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.runningFold
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -51,12 +46,28 @@ class ComposeMovieDetailViewModel @Inject constructor(
     private var movieId: Int = -1
     private var movieInfo: MovieModel.MovieModelResult? = null
 
-    private val _movieDetailUiEvent: MutableStateFlow<MovieDetailUiEvent> = MutableStateFlow(MovieDetailUiEvent.Idle)
-    val movieDetailUiEvent: StateFlow<MovieDetailUiState> = _movieDetailUiEvent.runningFold(MovieDetailUiState()) { state, event ->
-        when(event) {
-            MovieDetailUiEvent.Idle -> {
-                state
-            }
+    private val _movieDetailUiState = MutableStateFlow(MovieDetailUiState())
+    val movieDetailUiState = _movieDetailUiState.asStateFlow()
+    
+    private val _sideEffectEvent = Channel<SideEffectEvent>()
+    val sideEffectEvent = _sideEffectEvent.receiveAsFlow()
+
+    /**
+     * Ui update
+     *
+     * @param event
+     */
+    private fun eventMovieDetail(event: MovieDetailUiEvent) {
+        _movieDetailUiState.update { state ->
+            reducerMovieDetail(
+                state = state,
+                event = event
+            )
+        }
+    }
+
+    private fun reducerMovieDetail(state: MovieDetailUiState, event: MovieDetailUiEvent): MovieDetailUiState {
+        return when(event) {
             is MovieDetailUiEvent.UpdateLoading -> {
                 state.copy(isLoading = event.isLoading)
             }
@@ -67,13 +78,7 @@ class ComposeMovieDetailViewModel @Inject constructor(
                 state.copy(isSaveState = event.isSaveState)
             }
         }
-    }.stateIn(scope, SharingStarted.Eagerly, MovieDetailUiState())
-
-    private val _movieDetailErrorUiEvent = Channel<MovieDetailErrorUiEvent>()
-    val movieDetailErrorUiEvent: Flow<MovieDetailErrorUiEvent> = _movieDetailErrorUiEvent.receiveAsFlow()
-
-    private val _saveMovieDetailErrorUiEvent = Channel<SaveMovieDetailErrorUiEvent>()
-    val saveMovieDetailErrorUiEvent: Flow<SaveMovieDetailErrorUiEvent> = _saveMovieDetailErrorUiEvent.receiveAsFlow()
+    }
 
     fun handleViewModelEvent(composeMovieDetailViewModelEvent: ComposeMovieDetailViewModelEvent) {
         when(composeMovieDetailViewModelEvent) {
@@ -100,17 +105,17 @@ class ComposeMovieDetailViewModel @Inject constructor(
         scopeJob = scope.launch {
             getMovieDetailUseCase.invoke(movieId, language)
                 .onStart {
-                    _movieDetailUiEvent.value = MovieDetailUiEvent.UpdateLoading(true)
+                    eventMovieDetail(event = MovieDetailUiEvent.UpdateLoading(isLoading = true))
                 }
                 .onCompletion {
-                    _movieDetailUiEvent.value = MovieDetailUiEvent.UpdateLoading(false)
+                    eventMovieDetail(event = MovieDetailUiEvent.UpdateLoading(isLoading = false))
                 }
                 .filter {
                     val errorCode = "${it.code}"
                     val errorMessage = "${it.message}"
 
                     if(it is RequestResult.Error) {
-                        _movieDetailErrorUiEvent.send(MovieDetailErrorUiEvent.Fail(errorCode, errorMessage))
+                        _sideEffectEvent.send(SideEffectEvent.ShowToast(message = errorMessage))
                         when(errorCode) {
                             "ERROR" -> {
                                 LogUtil.e_dev("ERROR")
@@ -119,20 +124,19 @@ class ComposeMovieDetailViewModel @Inject constructor(
                     }
 
                     if(it is RequestResult.DataEmpty) {
-                        _movieDetailErrorUiEvent.send(MovieDetailErrorUiEvent.DataEmpty(true))
                     }
 
                     return@filter it is RequestResult.Success
                 }
                 .catch { e ->
-                    _movieDetailErrorUiEvent.send(MovieDetailErrorUiEvent.ExceptionHandle(e))
+                    _sideEffectEvent.send(SideEffectEvent.ShowToast(message = e.message?:""))
                 }
                 .map {
                     it.resultData
                 }
                 .collect {
                     delay(1000L)
-                    _movieDetailUiEvent.value = MovieDetailUiEvent.UpdateMovieDetail(movieDetail = it)
+                    eventMovieDetail(event = MovieDetailUiEvent.UpdateMovieDetail(movieDetail = it))
                     checkMovieDetail(movieDetail = it!!, null)
                 }
         }
@@ -143,17 +147,17 @@ class ComposeMovieDetailViewModel @Inject constructor(
         scopeJob = scope.launch {
             saveMovieDetailUseCase.invoke(movieDetail)
                 .onStart {
-                    _movieDetailUiEvent.value = MovieDetailUiEvent.UpdateLoading(true)
+                    eventMovieDetail(event = MovieDetailUiEvent.UpdateLoading(isLoading = true))
                 }
                 .onCompletion {
-                    _movieDetailUiEvent.value = MovieDetailUiEvent.UpdateLoading(false)
+                    eventMovieDetail(event = MovieDetailUiEvent.UpdateLoading(isLoading = false))
                 }
                 .filter {
                     val errorCode = "${it.code}"
                     val errorMessage = "${it.message}"
 
                     if(it is RequestResult.Error) {
-                        _saveMovieDetailErrorUiEvent.send(SaveMovieDetailErrorUiEvent.Fail(errorCode, errorMessage))
+                        _sideEffectEvent.send(SideEffectEvent.ShowToast(message = errorMessage))
                         when(errorCode) {
                             "ERROR" -> {
                                 LogUtil.e_dev("ERROR")
@@ -162,13 +166,12 @@ class ComposeMovieDetailViewModel @Inject constructor(
                     }
 
                     if(it is RequestResult.DataEmpty) {
-                        _saveMovieDetailErrorUiEvent.send(SaveMovieDetailErrorUiEvent.DataEmpty(true))
                     }
 
                     return@filter it is RequestResult.Success
                 }
                 .catch { e ->
-                    _saveMovieDetailErrorUiEvent.send(SaveMovieDetailErrorUiEvent.ExceptionHandle(e))
+                    _sideEffectEvent.send(SideEffectEvent.ShowToast(message = e.message?:""))
                 }
                 .map {
                     it.resultData
@@ -185,17 +188,17 @@ class ComposeMovieDetailViewModel @Inject constructor(
         scopeJob = scope.launch {
             deleteMovieDetailUseCase.invoke(movieDetail)
                 .onStart {
-                    _movieDetailUiEvent.value = MovieDetailUiEvent.UpdateLoading(true)
+                    eventMovieDetail(event = MovieDetailUiEvent.UpdateLoading(isLoading = true))
                 }
                 .onCompletion {
-                    _movieDetailUiEvent.value = MovieDetailUiEvent.UpdateLoading(false)
+                    eventMovieDetail(event = MovieDetailUiEvent.UpdateLoading(isLoading = false))
                 }
                 .filter {
                     val errorCode = "${it.code}"
                     val errorMessage = "${it.message}"
 
                     if(it is RequestResult.Error) {
-                        _saveMovieDetailErrorUiEvent.send(SaveMovieDetailErrorUiEvent.Fail(errorCode, errorMessage))
+                        _sideEffectEvent.send(SideEffectEvent.ShowToast(message = errorMessage))
                         when(errorCode) {
                             "ERROR" -> {
                                 LogUtil.e_dev("ERROR")
@@ -204,13 +207,12 @@ class ComposeMovieDetailViewModel @Inject constructor(
                     }
 
                     if(it is RequestResult.DataEmpty) {
-                        _saveMovieDetailErrorUiEvent.send(SaveMovieDetailErrorUiEvent.DataEmpty(true))
                     }
 
                     return@filter it is RequestResult.Success
                 }
                 .catch { e ->
-                    _saveMovieDetailErrorUiEvent.send(SaveMovieDetailErrorUiEvent.ExceptionHandle(e))
+                    _sideEffectEvent.send(SideEffectEvent.ShowToast(message = e.message?:""))
                 }
                 .map {
                     it.resultData
@@ -225,19 +227,19 @@ class ComposeMovieDetailViewModel @Inject constructor(
     private fun checkMovieDetail(movieDetail: MovieDetailModel, state: Boolean?) {
         scopeJob?.cancel()
         scopeJob = scope.launch {
-            checkMovieDetailUseCase.invoke(movieDetail.id)
+            checkMovieDetailUseCase.invoke(movieId = movieDetail.id)
                 .onStart {
-                    _movieDetailUiEvent.value = MovieDetailUiEvent.UpdateLoading(true)
+                    eventMovieDetail(event = MovieDetailUiEvent.UpdateLoading(isLoading = false))
                 }
                 .onCompletion {
-                    _movieDetailUiEvent.value = MovieDetailUiEvent.UpdateLoading(false)
+                    eventMovieDetail(event = MovieDetailUiEvent.UpdateLoading(isLoading = false))
                 }
                 .filter {
                     val errorCode = "${it.code}"
                     val errorMessage = "${it.message}"
 
                     if(it is RequestResult.Error) {
-                        _saveMovieDetailErrorUiEvent.send(SaveMovieDetailErrorUiEvent.Fail(errorCode, errorMessage))
+                        _sideEffectEvent.send(SideEffectEvent.ShowToast(message = errorMessage))
                         when(errorCode) {
                             "ERROR" -> {
                                 LogUtil.e_dev("ERROR")
@@ -246,21 +248,30 @@ class ComposeMovieDetailViewModel @Inject constructor(
                     }
 
                     if(it is RequestResult.DataEmpty) {
-                        _saveMovieDetailErrorUiEvent.send(SaveMovieDetailErrorUiEvent.DataEmpty(true))
                     }
 
                     return@filter it is RequestResult.Success
                 }
                 .catch { e ->
-                    _saveMovieDetailErrorUiEvent.send(SaveMovieDetailErrorUiEvent.ExceptionHandle(e))
+                    _sideEffectEvent.send(SideEffectEvent.ShowToast(message = e.message?:""))
                 }
                 .map {
                     it.resultData
                 }
                 .collect {
                     LogUtil.i_dev("확인 결과: ${it} / set state: ${state}")
-                    _movieDetailUiEvent.value = MovieDetailUiEvent.UpdateSaveState(isSaveState = state?:it!!)
+                    eventMovieDetail(event = MovieDetailUiEvent.UpdateSaveState(isSaveState = state?:it!!))
                 }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+
+        _sideEffectEvent.close()
+    }
+    
+    sealed interface SideEffectEvent {
+        class ShowToast(val message: String): SideEffectEvent
     }
 }

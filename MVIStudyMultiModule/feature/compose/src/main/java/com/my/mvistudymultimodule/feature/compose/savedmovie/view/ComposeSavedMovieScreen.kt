@@ -55,7 +55,7 @@ import com.my.mvistudymultimodule.core.util.LogUtil
 import com.my.mvistudymultimodule.feature.compose.home.view.ui.theme.grey300
 import com.my.mvistudymultimodule.feature.compose.home.view.ui.theme.white
 import com.my.mvistudymultimodule.feature.compose.home.viewmodel.ComposeHomeViewModel
-import com.my.mvistudymultimodule.feature.compose.savedmovie.event.ComposeSavedMovieHomeScreenEvent
+import com.my.mvistudymultimodule.feature.compose.savedmovie.event.ComposeSavedMovieScreenEvent
 import com.my.mvistudymultimodule.feature.compose.savedmovie.event.ComposeSavedMovieViewModelEvent
 import com.my.mvistudymultimodule.feature.compose.savedmovie.viewmodel.ComposeSavedMovieViewModel
 import com.skydoves.landscapist.ImageOptions
@@ -90,10 +90,10 @@ fun ComposeSavedMovieScreen(
         scope = scope,
         composeSavedMovieHomeScreenEvent = {
             when(it) {
-                is ComposeSavedMovieHomeScreenEvent.OnBackClick -> {
+                is ComposeSavedMovieScreenEvent.OnBackClick -> {
                     navController.popBackStack()
                 }
-                is ComposeSavedMovieHomeScreenEvent.OnMovieClick -> {
+                is ComposeSavedMovieScreenEvent.OnMovieClick -> {
                     LogUtil.d_dev("영화 클릭: ${it.movieInfo.title}")
                     val movieInfoStr = URLEncoder.encode(
                         Gson().toJson(it.movieInfo),
@@ -118,7 +118,7 @@ fun ComposeSavedMovieScreen(
 fun ComposeSavedMovieUI(
     localContext: Context,
     scope: CoroutineScope,
-    composeSavedMovieHomeScreenEvent: (ComposeSavedMovieHomeScreenEvent) -> Unit,
+    composeSavedMovieHomeScreenEvent: (ComposeSavedMovieScreenEvent) -> Unit,
     savedMovieListPaging: LazyPagingItems<MovieDetailModel>?
 ) {
     // LoadingView 제어
@@ -133,7 +133,7 @@ fun ComposeSavedMovieUI(
             HeaderView(
                 localContext = localContext,
                 onBackClick = {
-                    composeSavedMovieHomeScreenEvent.invoke(ComposeSavedMovieHomeScreenEvent.OnBackClick())
+                    composeSavedMovieHomeScreenEvent.invoke(ComposeSavedMovieScreenEvent.OnBackClick())
                 }
             )
 
@@ -152,7 +152,7 @@ fun ComposeSavedMovieUI(
                             movieInfo = movie,
                             onClick = { item ->
                                 composeSavedMovieHomeScreenEvent.invoke(
-                                    ComposeSavedMovieHomeScreenEvent.OnMovieClick(
+                                    ComposeSavedMovieScreenEvent.OnMovieClick(
                                         movieInfo = item
                                     )
                                 )
@@ -264,7 +264,7 @@ fun ComposeSavedMovieUI(
     }
 
     BackHandler {
-        composeSavedMovieHomeScreenEvent.invoke(ComposeSavedMovieHomeScreenEvent.OnBackClick())
+        composeSavedMovieHomeScreenEvent.invoke(ComposeSavedMovieScreenEvent.OnBackClick())
     }
 }
 

@@ -1,6 +1,5 @@
 package com.my.mvistudymultimodule.core.database.dao
 
-import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete

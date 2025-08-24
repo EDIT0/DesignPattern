@@ -2,7 +2,6 @@ package com.my.mvistudymultimodule.feature.compose.mainhome.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
 import com.my.mvistudymultimodule.core.base.BaseAndroidViewModel
@@ -13,12 +12,15 @@ import com.my.mvistudymultimodule.feature.compose.mainhome.event.MovieListPaging
 import com.my.mvistudymultimodule.feature.compose.mainhome.state.MovieListPagingUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.runningFold
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,17 +35,25 @@ class ComposeMainHomeViewModel @Inject constructor(
 
     private val language = "ko-KR"
 
-    private val _movieListPagingUiEvent: MutableStateFlow<MovieListPagingUiEvent> = MutableStateFlow(MovieListPagingUiEvent.Idle)
-    val movieListPagingUiState: StateFlow<MovieListPagingUiState> = _movieListPagingUiEvent.runningFold(MovieListPagingUiState()) { state, event ->
-        when(event) {
-            is MovieListPagingUiEvent.Idle -> {
-                state.copy(movieList = MutableStateFlow(value = PagingData.empty()))
-            }
+    private val _sideEffectEvent = Channel<SideEffectEvent>()
+    val sideEffectEvent = _sideEffectEvent.receiveAsFlow()
+
+    private val _movieListPagingUiState = MutableStateFlow(MovieListPagingUiState())
+    val movieListPagingUiState = _movieListPagingUiState.asStateFlow()
+
+    private fun eventMovieListPaging(event: MovieListPagingUiEvent) {
+        _movieListPagingUiState.update { state ->
+            reducerMovieListPaging(state = state, event = event)
+        }
+    }
+
+    private fun reducerMovieListPaging(state: MovieListPagingUiState, event: MovieListPagingUiEvent): MovieListPagingUiState {
+        return when(event) {
             is MovieListPagingUiEvent.UpdateMovieList -> {
                 state.copy(movieList = MutableStateFlow(value = event.movieList!!))
             }
         }
-    }.stateIn(scope, SharingStarted.Eagerly, MovieListPagingUiState())
+    }
 
     fun handleViewModelEvent(composeMainHomeViewModelEvent: ComposeMainHomeViewModelEvent) {
         when(composeMainHomeViewModelEvent) {
@@ -68,10 +78,22 @@ class ComposeMainHomeViewModel @Inject constructor(
                     }
                 }
                 .cachedIn(scope)
+                .catch { e ->
+                    _sideEffectEvent.send(SideEffectEvent.ShowToast(message = e.message?:""))
+                }
                 .collect {
-                    _movieListPagingUiEvent.value = MovieListPagingUiEvent.UpdateMovieList(movieList = it)
+                    eventMovieListPaging(event = MovieListPagingUiEvent.UpdateMovieList(movieList = it))
                 }
         }
     }
 
+    sealed interface SideEffectEvent {
+        class ShowToast(val message: String): SideEffectEvent
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+
+        _sideEffectEvent.cancel()
+    }
 }

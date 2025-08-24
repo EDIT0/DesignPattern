@@ -10,5 +10,5 @@ data class MovieListUiState(
 )
 
 data class MovieListPagingUiState(
-    val movieList: MutableStateFlow<PagingData<MovieModel.MovieModelResult>>? = null,
+    val movieList: MutableStateFlow<PagingData<MovieModel.MovieModelResult>>? = null
 )

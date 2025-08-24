@@ -71,7 +71,6 @@ import com.my.mvistudymultimodule.feature.compose.home.view.ui.theme.grey300
 import com.my.mvistudymultimodule.feature.compose.home.view.ui.theme.grey500
 import com.my.mvistudymultimodule.feature.compose.home.view.ui.theme.white
 import com.my.mvistudymultimodule.feature.compose.home.viewmodel.ComposeHomeViewModel
-import com.my.mvistudymultimodule.feature.compose.savedmovie.event.ComposeSavedMovieViewModelEvent
 import com.my.mvistudymultimodule.feature.compose.searchmovie.event.ComposeSearchMovieScreenEvent
 import com.my.mvistudymultimodule.feature.compose.searchmovie.event.ComposeSearchMovieViewModelEvent
 import com.my.mvistudymultimodule.feature.compose.searchmovie.state.SearchUiState
@@ -106,7 +105,7 @@ fun ComposeSearchMovieScreen(
     }
 
     val sideEffectEvent = composeSearchMovieViewModel.sideEffectEvent
-    val searchUiState = composeSearchMovieViewModel.searchStateUiEvent.collectAsState().value
+    val searchUiState = composeSearchMovieViewModel.searchStateUiState.collectAsState().value
     val searchUiStatePaging = searchUiState.searchMovieList?.collectAsLazyPagingItems()
 
     ComposeSearchMovieScreenUI(
@@ -333,7 +332,6 @@ fun ComposeSearchMovieScreenUI(
     LaunchedEffect(Unit) {
         sideEffectEvent.collect {
             when(it) {
-                is ComposeSearchMovieViewModel.SideEffectEvent.Idle -> {}
                 is ComposeSearchMovieViewModel.SideEffectEvent.Toast -> {
                     ToastUtil.makeToast(localView, it.message)
                 }

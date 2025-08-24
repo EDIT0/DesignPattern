@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -52,8 +53,11 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.gson.Gson
 import com.my.mvistudymultimodule.core.base.ComposeCustomScreen
 import com.my.mvistudymultimodule.core.base.NavigationScreenName
+import com.my.mvistudymultimodule.core.base.R
+import com.my.mvistudymultimodule.core.di.BuildConfig
 import com.my.mvistudymultimodule.core.model.MovieModel
 import com.my.mvistudymultimodule.core.util.LogUtil
+import com.my.mvistudymultimodule.core.util.ToastUtil
 import com.my.mvistudymultimodule.feature.compose.home.view.ui.theme.grey300
 import com.my.mvistudymultimodule.feature.compose.home.view.ui.theme.white
 import com.my.mvistudymultimodule.feature.compose.home.viewmodel.ComposeHomeViewModel
@@ -74,6 +78,7 @@ fun ComposeMainHomeScreen(
     composeMainHomeViewModel: ComposeMainHomeViewModel = hiltViewModel(),
     intent: Intent
 ) {
+    val localView = LocalView.current
     val localContext = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -85,6 +90,19 @@ fun ComposeMainHomeScreen(
     }
 
     val movieListPagingUiState = composeMainHomeViewModel.movieListPagingUiState.collectAsState().value
+
+    LaunchedEffect(Unit) {
+        composeMainHomeViewModel.sideEffectEvent.collect {
+            when(it) {
+                is ComposeMainHomeViewModel.SideEffectEvent.ShowToast -> {
+                    ToastUtil.makeToast(
+                        view = localView,
+                        message = it.message
+                    )
+                }
+            }
+        }
+    }
 
     ComposeMainHomeUI(
         localContext = localContext,
@@ -290,7 +308,7 @@ fun ComposeMainHomeUI(
                     .padding(15.dp)
             ) {
                 Icon(
-                    painter = painterResource(id = com.my.mvistudymultimodule.core.base.R.drawable.ic_save_24_000000),
+                    painter = painterResource(id = R.drawable.ic_save_24_000000),
                     contentDescription = ""
                 )
             }
@@ -337,7 +355,7 @@ fun HeaderView(
             }
         ) {
             Image(
-                painter = painterResource(com.my.mvistudymultimodule.core.base.R.drawable.ic_arrow_back_ios_new_24_000000),
+                painter = painterResource(R.drawable.ic_arrow_back_ios_new_24_000000),
                 contentDescription = "Back"
             )
         }
@@ -355,7 +373,7 @@ fun HeaderView(
                 modifier = Modifier
                     .wrapContentHeight()
                     .padding(horizontal = 5.dp),
-                text = localContext.getString(com.my.mvistudymultimodule.core.base.R.string.main_home_movie_search)
+                text = localContext.getString(R.string.main_home_movie_search)
             )
         }
 
@@ -367,7 +385,7 @@ fun HeaderView(
             }
         ) {
             Image(
-                painter = painterResource(com.my.mvistudymultimodule.core.base.R.drawable.ic_search_24_000000),
+                painter = painterResource(R.drawable.ic_search_24_000000),
                 contentDescription = "Search"
             )
         }
@@ -397,9 +415,9 @@ fun MovieListItemView(
                     .padding(5.dp)
                     .clip(MaterialTheme.shapes.extraSmall),
                 imageModel = {
-                    com.my.mvistudymultimodule.core.di.BuildConfig.BASE_MOVIE_POSTER + movieInfo.posterPath
+                    BuildConfig.BASE_MOVIE_POSTER + movieInfo.posterPath
                 },
-                previewPlaceholder = painterResource(id = com.my.mvistudymultimodule.core.base.R.drawable.ic_search_24_000000),
+                previewPlaceholder = painterResource(id = R.drawable.ic_search_24_000000),
                 imageOptions = ImageOptions(
                     alignment = Alignment.TopCenter,
                     contentScale = ContentScale.FillWidth
@@ -484,7 +502,7 @@ fun RetryView(
                 retry.invoke()
             }
         ) {
-            Text(localContext.getString(com.my.mvistudymultimodule.core.base.R.string.common_retry))
+            Text(localContext.getString(R.string.common_retry))
         }
         Text(
             modifier = Modifier
@@ -506,7 +524,7 @@ fun ImageEmptyView() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            painter = painterResource(id = com.my.mvistudymultimodule.core.base.R.drawable.ic_save_24_000000),
+            painter = painterResource(id = R.drawable.ic_save_24_000000),
             contentDescription = "ImageEmptyView"
         )
     }

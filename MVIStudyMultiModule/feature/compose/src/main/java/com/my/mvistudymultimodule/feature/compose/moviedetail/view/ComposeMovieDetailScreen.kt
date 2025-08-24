@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -30,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -41,13 +43,13 @@ import androidx.navigation.NavController
 import com.my.mvistudymultimodule.core.base.ComposeCustomScreen
 import com.my.mvistudymultimodule.core.model.MovieDetailModel
 import com.my.mvistudymultimodule.core.model.MovieModel
+import com.my.mvistudymultimodule.core.util.ToastUtil
 import com.my.mvistudymultimodule.core.util.dpToSp
 import com.my.mvistudymultimodule.feature.compose.home.view.ui.theme.white
 import com.my.mvistudymultimodule.feature.compose.home.viewmodel.ComposeHomeViewModel
 import com.my.mvistudymultimodule.feature.compose.mainhome.view.ImageEmptyView
 import com.my.mvistudymultimodule.feature.compose.moviedetail.event.ComposeMovieDetailScreenEvent
 import com.my.mvistudymultimodule.feature.compose.moviedetail.event.ComposeMovieDetailViewModelEvent
-import com.my.mvistudymultimodule.feature.compose.moviedetail.event.SaveMovieDetailErrorUiEvent
 import com.my.mvistudymultimodule.feature.compose.moviedetail.state.MovieDetailUiState
 import com.my.mvistudymultimodule.feature.compose.moviedetail.viewmodel.ComposeMovieDetailViewModel
 import com.skydoves.landscapist.ImageOptions
@@ -64,6 +66,7 @@ fun ComposeMovieDetailScreen(
     movieId: Int,
     movieInfo: MovieModel.MovieModelResult
 ) {
+    val localView = LocalView.current
     val localContext = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -71,24 +74,14 @@ fun ComposeMovieDetailScreen(
         mutableStateOf(true)
     }
 
-    val movieDetailUiState = composeMovieDetailViewModel.movieDetailUiEvent.collectAsState().value
+    val movieDetailUiState = composeMovieDetailViewModel.movieDetailUiState.collectAsState().value
 
     LaunchedEffect(Unit) {
-        composeMovieDetailViewModel.saveMovieDetailErrorUiEvent.collectLatest { event ->
+        composeMovieDetailViewModel.sideEffectEvent.collectLatest { event ->
             when (event) {
-                is SaveMovieDetailErrorUiEvent.ConnectionError -> {
-
+                is ComposeMovieDetailViewModel.SideEffectEvent.ShowToast -> {
+                    ToastUtil.makeToast(localView, event.message)
                 }
-                is SaveMovieDetailErrorUiEvent.DataEmpty -> {
-
-                }
-                is SaveMovieDetailErrorUiEvent.ExceptionHandle -> {
-
-                }
-                is SaveMovieDetailErrorUiEvent.Fail -> {
-
-                }
-                is SaveMovieDetailErrorUiEvent.Idle -> {}
             }
         }
     }
@@ -129,6 +122,9 @@ fun ComposeMovieDetailScreen(
 //            navController.navigate(route = NavigationScreenName.TestScreen.name)
         }
     }
+
+    // 스크린 전체 로딩뷰
+    LoadingView(isShow = movieDetailUiState.isLoading)
 }
 
 @Composable
@@ -279,6 +275,22 @@ fun HeaderView(
                 },
                 contentDescription = "SaveMovie"
             )
+        }
+    }
+}
+
+@Composable
+fun LoadingView(
+    isShow: Boolean
+) {
+    if (isShow) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            CircularProgressIndicator()
         }
     }
 }
