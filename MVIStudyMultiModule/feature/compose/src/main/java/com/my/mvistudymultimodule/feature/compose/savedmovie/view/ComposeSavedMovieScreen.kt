@@ -337,6 +337,15 @@ fun MovieListItemView(
                     BuildConfig.BASE_MOVIE_POSTER + movieInfo.posterPath
                 },
                 previewPlaceholder = painterResource(id = R.drawable.ic_search_24_000000),
+                loading = {
+                    // 이미지 로딩 중 보여줄 뷰
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_search_24_000000),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.None
+                    )
+                },
                 imageOptions = ImageOptions(
                     alignment = Alignment.TopCenter,
                     contentScale = ContentScale.FillWidth

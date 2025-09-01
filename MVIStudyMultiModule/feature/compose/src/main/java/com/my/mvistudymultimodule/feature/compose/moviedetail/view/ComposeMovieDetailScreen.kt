@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.my.mvistudymultimodule.core.base.ComposeCustomScreen
+import com.my.mvistudymultimodule.core.base.R
 import com.my.mvistudymultimodule.core.model.MovieDetailModel
 import com.my.mvistudymultimodule.core.model.MovieModel
 import com.my.mvistudymultimodule.core.util.ToastUtil
@@ -172,7 +173,16 @@ fun ComposeMovieDetailUI(
                     imageModel = {
                         com.my.mvistudymultimodule.core.di.BuildConfig.BASE_MOVIE_POSTER + movieDetailUiState.movieDetail?.posterPath
                     },
-                    previewPlaceholder = painterResource(id = com.my.mvistudymultimodule.core.base.R.drawable.ic_search_24_000000),
+                    previewPlaceholder = painterResource(id = R.drawable.ic_search_24_000000),
+                    loading = {
+                        // 이미지 로딩 중 보여줄 뷰
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_search_24_000000),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.None
+                        )
+                    },
                     imageOptions = ImageOptions(
                         alignment = Alignment.TopCenter,
                         contentScale = ContentScale.FillHeight
