@@ -64,7 +64,7 @@ object NetworkModule {
             var response = chain.proceed(requestWithToken)
 
             // 401 에러 시 토큰 갱신 후 재요청
-//            if (response.code == 401) {
+            if (response.code == 401) {
                 synchronized(this) {
                     response.close() // 기존 response 닫기
 
@@ -104,7 +104,7 @@ object NetworkModule {
 
                     LogUtil.d_dev("재요청 Token: $token")
                     response = chain.proceed(retryRequest)
-//                }
+                }
             }
 
             return response

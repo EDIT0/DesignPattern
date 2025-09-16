@@ -3,10 +3,12 @@ package com.my.mvistudymultimodule.core.base
 sealed class RequestResult<T>(
     val resultData: T? = null,
     val code: String? = null,
-    val message: String? = null
+    val message: String? = null,
+    val throwable: Throwable? = null
 ) {
     class Success<T>(data: T) : RequestResult<T>(data)
     class Error<T>(code: String, message: String?) : RequestResult<T>(code = code, message = message)
-    class ConnectionError<T>(code: String, message: String?) : RequestResult<T>(code = code, message = message)
+    class ExceptionError<T>(throwable: Throwable): RequestResult<T>(throwable = throwable)
+//    class ConnectionError<T>(code: String, message: String?) : RequestResult<T>(code = code, message = message)
     class DataEmpty<T>() : RequestResult<T>()
 }

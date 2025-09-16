@@ -16,10 +16,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.runningFold
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -39,30 +40,47 @@ class ComposeSearchMovieViewModel @Inject constructor(
     private val _sideEffectEvent = Channel<SideEffectEvent>()
     val sideEffectEvent = _sideEffectEvent.receiveAsFlow()
 
-    private val _searchStateUiState = MutableStateFlow<SearchUiState>(SearchUiState())
-    val searchStateUiState = _searchStateUiState.asStateFlow()
-
-    /**
-     * Ui update
-     *
-     * @param event
-     */
-    private fun eventSearchState(event: SearchStateUiEvent) {
-        _searchStateUiState.update { state ->
-            reducerSearchState(state, event)
-        }
-    }
-
-    private fun reducerSearchState(state: SearchUiState, event: SearchStateUiEvent): SearchUiState {
-        return when (event) {
-            is SearchStateUiEvent.UpdateSearchKeyword -> {
-                state.copy(searchKeyword = event.searchKeyword)
+    private val _searchStateUiEvent = Channel<SearchStateUiEvent>()
+    val searchStateUiState = _searchStateUiEvent.receiveAsFlow()
+        .runningFold(
+            initial = SearchUiState(),
+            operation = { state, event ->
+                when(event) {
+                    is SearchStateUiEvent.UpdateSearchKeyword -> {
+                        state.copy(searchKeyword = event.searchKeyword)
+                    }
+                    is SearchStateUiEvent.UpdateSearchMovieList -> {
+                        state.copy(searchMovieList = MutableStateFlow(event.searchMovieList!!))
+                    }
+                }
             }
-            is SearchStateUiEvent.UpdateSearchMovieList -> {
-                state.copy(searchMovieList = MutableStateFlow(value = event.searchMovieList!!))
-            }
-        }
-    }
+        )
+        .stateIn(scope = scope, started = SharingStarted.Eagerly, initialValue = SearchUiState())
+
+//    private val _searchStateUiState = MutableStateFlow<SearchUiState>(SearchUiState())
+//    val searchStateUiState = _searchStateUiState.asStateFlow()
+//
+//    /**
+//     * Ui update
+//     *
+//     * @param event
+//     */
+//    private fun eventSearchState(event: SearchStateUiEvent) {
+//        _searchStateUiState.update { state ->
+//            reducerSearchState(state, event)
+//        }
+//    }
+//
+//    private fun reducerSearchState(state: SearchUiState, event: SearchStateUiEvent): SearchUiState {
+//        return when (event) {
+//            is SearchStateUiEvent.UpdateSearchKeyword -> {
+//                state.copy(searchKeyword = event.searchKeyword)
+//            }
+//            is SearchStateUiEvent.UpdateSearchMovieList -> {
+//                state.copy(searchMovieList = MutableStateFlow(value = event.searchMovieList!!))
+//            }
+//        }
+//    }
 
     fun handleViewModelEvent(composeSearchMovieViewModelEvent: ComposeSearchMovieViewModelEvent) {
         when(composeSearchMovieViewModelEvent) {
@@ -70,7 +88,9 @@ class ComposeSearchMovieViewModel @Inject constructor(
 
             }
             is ComposeSearchMovieViewModelEvent.SaveCurrentSearchKeyword -> {
-                eventSearchState(SearchStateUiEvent.UpdateSearchKeyword(searchKeyword = composeSearchMovieViewModelEvent.searchKeyword))
+                scope.launch {
+                    _searchStateUiEvent.send(SearchStateUiEvent.UpdateSearchKeyword(searchKeyword = composeSearchMovieViewModelEvent.searchKeyword))
+                }
 
                 debounceJob?.cancel()
                 debounceJob = scope.launch {
@@ -94,7 +114,7 @@ class ComposeSearchMovieViewModel @Inject constructor(
                             }
                                 .cachedIn(scope)
                                 .collect {
-                                    eventSearchState(SearchStateUiEvent.UpdateSearchMovieList(searchMovieList = it))
+                                    _searchStateUiEvent.send(element = SearchStateUiEvent.UpdateSearchMovieList(searchMovieList = it))
                                 }
                         }
                     } else if(composeSearchMovieViewModelEvent.searchKeyword.isNotEmpty() && composeSearchMovieViewModelEvent.searchKeyword.length < 2) {

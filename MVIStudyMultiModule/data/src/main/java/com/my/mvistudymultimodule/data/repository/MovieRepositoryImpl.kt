@@ -95,7 +95,8 @@ class MovieRepositoryImpl @Inject constructor(
                 emit(RequestResult.Error("ERROR", "error message"))
             }
         }.catch {
-            throw Exception(it)
+//            throw Exception(it)
+            emit(RequestResult.ExceptionError(throwable = it))
         }
     }
 

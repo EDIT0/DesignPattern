@@ -12,10 +12,13 @@ import com.my.mvistudymultimodule.feature.compose.savedmovie.event.SavedMovieLis
 import com.my.mvistudymultimodule.feature.compose.savedmovie.state.SavedMovieListPagingUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.runningFold
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,27 +31,41 @@ class ComposeSavedMovieViewModel @Inject constructor(
     private val scope = viewModelScope
     private var scopeJob: Job? = null
 
-    private val _savedMovieListPagingUiState = MutableStateFlow<SavedMovieListPagingUiState>(SavedMovieListPagingUiState())
-    val savedMovieListPagingUiState = _savedMovieListPagingUiState.asStateFlow()
-
-    /**
-     * Ui update
-     *
-     * @param event
-     */
-    private fun eventSavedMovieList(event: SavedMovieListPagingUiEvent) {
-        _savedMovieListPagingUiState.update { state ->
-            reducerSavedMovieList(state, event)
-        }
-    }
-
-    private fun reducerSavedMovieList(state: SavedMovieListPagingUiState, event: SavedMovieListPagingUiEvent): SavedMovieListPagingUiState {
-        return when(event) {
-            is SavedMovieListPagingUiEvent.UpdateSavedMovieList -> {
-                state.copy(savedMovieList = MutableStateFlow(value = event.savedMovieList!!))
+    private val _savedMovieListPagingUiEvent = Channel<SavedMovieListPagingUiEvent>()
+    val savedMovieListPagingUiState = _savedMovieListPagingUiEvent.receiveAsFlow()
+        .runningFold(
+            initial = SavedMovieListPagingUiState(),
+            operation = { state, event ->
+                when(event) {
+                    is SavedMovieListPagingUiEvent.UpdateSavedMovieList -> {
+                        state.copy(savedMovieList = MutableStateFlow(event.savedMovieList!!))
+                    }
+                }
             }
-        }
-    }
+        )
+        .stateIn(scope, SharingStarted.Eagerly, SavedMovieListPagingUiState())
+
+//    private val _savedMovieListPagingUiState = MutableStateFlow<SavedMovieListPagingUiState>(SavedMovieListPagingUiState())
+//    val savedMovieListPagingUiState = _savedMovieListPagingUiState.asStateFlow()
+//
+//    /**
+//     * Ui update
+//     *
+//     * @param event
+//     */
+//    private fun eventSavedMovieList(event: SavedMovieListPagingUiEvent) {
+//        _savedMovieListPagingUiState.update { state ->
+//            reducerSavedMovieList(state, event)
+//        }
+//    }
+//
+//    private fun reducerSavedMovieList(state: SavedMovieListPagingUiState, event: SavedMovieListPagingUiEvent): SavedMovieListPagingUiState {
+//        return when(event) {
+//            is SavedMovieListPagingUiEvent.UpdateSavedMovieList -> {
+//                state.copy(savedMovieList = MutableStateFlow(value = event.savedMovieList!!))
+//            }
+//        }
+//    }
 
     fun handleViewModelEvent(composeSavedMovieViewModelEvent: ComposeSavedMovieViewModelEvent) {
         when(composeSavedMovieViewModelEvent) {
@@ -73,7 +90,7 @@ class ComposeSavedMovieViewModel @Inject constructor(
                 }
                 .cachedIn(scope)
                 .collect {
-                    eventSavedMovieList(SavedMovieListPagingUiEvent.UpdateSavedMovieList(savedMovieList = it))
+                    _savedMovieListPagingUiEvent.send(element = SavedMovieListPagingUiEvent.UpdateSavedMovieList(savedMovieList = it))
                 }
         }
     }
