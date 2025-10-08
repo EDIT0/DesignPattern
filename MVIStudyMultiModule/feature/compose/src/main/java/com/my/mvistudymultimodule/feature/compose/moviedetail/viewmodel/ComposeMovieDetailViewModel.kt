@@ -2,6 +2,8 @@ package com.my.mvistudymultimodule.feature.compose.moviedetail.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.viewModelScope
+import androidx.paging.cachedIn
+import androidx.paging.map
 import com.my.mvistudymultimodule.core.base.BaseAndroidViewModel
 import com.my.mvistudymultimodule.core.base.RequestResult
 import com.my.mvistudymultimodule.core.model.MovieDetailModel
@@ -10,21 +12,23 @@ import com.my.mvistudymultimodule.core.util.LogUtil
 import com.my.mvistudymultimodule.domain.usecase.CheckMovieDetailUseCase
 import com.my.mvistudymultimodule.domain.usecase.DeleteMovieDetailUseCase
 import com.my.mvistudymultimodule.domain.usecase.GetMovieDetailUseCase
+import com.my.mvistudymultimodule.domain.usecase.GetMovieReviewUseCase
 import com.my.mvistudymultimodule.domain.usecase.SaveMovieDetailUseCase
 import com.my.mvistudymultimodule.feature.compose.moviedetail.event.ComposeMovieDetailViewModelEvent
 import com.my.mvistudymultimodule.feature.compose.moviedetail.event.MovieDetailUiEvent
+import com.my.mvistudymultimodule.feature.compose.moviedetail.event.MovieReviewListPagingUiEvent
 import com.my.mvistudymultimodule.feature.compose.moviedetail.state.MovieDetailUiState
+import com.my.mvistudymultimodule.feature.compose.moviedetail.state.MovieReviewListPagingUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
@@ -40,13 +44,14 @@ class ComposeMovieDetailViewModel @Inject constructor(
     private val getMovieDetailUseCase: GetMovieDetailUseCase,
     private val saveMovieDetailUseCase: SaveMovieDetailUseCase,
     private val deleteMovieDetailUseCase: DeleteMovieDetailUseCase,
-    private val checkMovieDetailUseCase: CheckMovieDetailUseCase
+    private val checkMovieDetailUseCase: CheckMovieDetailUseCase,
+    private val getMovieReviewUseCase: GetMovieReviewUseCase
 ): BaseAndroidViewModel(app) {
 
     private val scope = viewModelScope
     private var scopeJob: Job? = null
 
-    private val language = "ko-KR"
+    private val language = "en-US" // ko-KR
     private var movieId: Int = -1
     private var movieInfo: MovieModel.MovieModelResult? = null
 
@@ -69,6 +74,20 @@ class ComposeMovieDetailViewModel @Inject constructor(
             }
         )
         .stateIn(scope, SharingStarted.Eagerly, MovieDetailUiState())
+
+    private val _movieReviewListPagingUiEvent = Channel<MovieReviewListPagingUiEvent>(capacity = Channel.UNLIMITED)
+    val movieReviewListPagingUiState: StateFlow<MovieReviewListPagingUiState> = _movieReviewListPagingUiEvent.receiveAsFlow()
+        .runningFold(
+            initial = MovieReviewListPagingUiState(),
+            operation = { state, event ->
+                when(event) {
+                    is MovieReviewListPagingUiEvent.UpdateMovieReviewList -> {
+                        state.copy(reviewList = MutableStateFlow(value = event.movieReviewList!!))
+                    }
+                }
+            }
+        )
+        .stateIn(scope, SharingStarted.Eagerly, MovieReviewListPagingUiState())
 
 //    private val _movieDetailUiState = MutableStateFlow(MovieDetailUiState())
 //    val movieDetailUiState = _movieDetailUiState.asStateFlow()
@@ -128,6 +147,14 @@ class ComposeMovieDetailViewModel @Inject constructor(
                     deleteMovieDetail(composeMovieDetailViewModelEvent.movieDetail)
                 }
             }
+            is ComposeMovieDetailViewModelEvent.GetMovieReview -> {
+                scope.launch {
+                    getMovieReview(
+                        movieId = composeMovieDetailViewModelEvent.movieId,
+                        language = language
+                    )
+                }
+            }
         }
     }
 
@@ -141,10 +168,12 @@ class ComposeMovieDetailViewModel @Inject constructor(
         scope.launch {
             getMovieDetail(movieId = movieId + 1)
             LogUtil.i_dev("Middle value: ${movieDetailUiState.value.movieDetail?.originalTitle}")
+            
             if(movieDetailUiState.value.movieDetail?.id == null) {
-                coroutineContext.cancel()
+//                coroutineContext.cancel()
+                scope.cancel()
             }
-            getMovieDetail(movieId = movieDetailUiState.value.movieDetail?.id!! - 1)
+            getMovieDetail(movieId = (movieDetailUiState.value.movieDetail?.id?:1) - 1)
         }
     }
 
@@ -351,6 +380,32 @@ class ComposeMovieDetailViewModel @Inject constructor(
                     _movieDetailUiEvent.send(element = MovieDetailUiEvent.UpdateSaveState(isSaveState = state?:it!!))
                 }
 //        }
+    }
+
+    /**
+     * 영화 리뷰 리스트 (페이징)
+     *
+     * @param movieId
+     * @param language
+     */
+    private suspend fun getMovieReview(movieId: Int, language: String) {
+        getMovieReviewUseCase.invoke(
+            movieId = movieId,
+            language = language
+        )
+            .map { it ->
+                it.map { model ->
+                    LogUtil.d_dev("페이징 데이터:  ${model}")
+                    model
+                }
+            }
+            .cachedIn(scope)
+            .catch { e ->
+                _sideEffectEvent.send(SideEffectEvent.ShowToast(message = e.message?:""))
+            }
+            .collect {
+                _movieReviewListPagingUiEvent.send(element = MovieReviewListPagingUiEvent.UpdateMovieReviewList(movieReviewList = it))
+            }
     }
 
     override fun onCleared() {

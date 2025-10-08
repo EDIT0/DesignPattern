@@ -5,8 +5,10 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.my.mvistudymultimodule.core.model.MovieDetailModel
 import com.my.mvistudymultimodule.core.model.MovieModel
+import com.my.mvistudymultimodule.core.model.MovieReviewModel
 import com.my.mvistudymultimodule.data.BuildConfig
 import com.my.mvistudymultimodule.data.api.ApiService
+import com.my.mvistudymultimodule.data.repository.remote.paging.GetMovieReviewPagingSource
 import com.my.mvistudymultimodule.data.repository.remote.paging.GetPopularMoviePagingSource
 import com.my.mvistudymultimodule.data.repository.remote.paging.GetSearchMoviePagingSource
 import kotlinx.coroutines.flow.Flow
@@ -80,5 +82,30 @@ class MovieRemoteDataSourceImpl @Inject constructor(
         language: String
     ): Response<MovieDetailModel> {
         return apiService.getMovieDetail(movieId, BuildConfig.API_KEY, language)
+    }
+
+    override suspend fun getMovieReviewPaging(
+        language: String,
+        movieId: Int
+    ): Flow<PagingData<MovieReviewModel.Result>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 10,
+                prefetchDistance = 5,
+                enablePlaceholders = false,
+                initialLoadSize = 10,
+                maxSize = 10000,
+//                jumpThreshold = TODO()
+            ),
+            pagingSourceFactory = {
+                GetMovieReviewPagingSource(
+                    apiService = apiService,
+                    language = language,
+                    movieId = movieId
+                )
+            }
+        ).flow.catch {
+            throw Exception(it)
+        }
     }
 }

@@ -39,8 +39,8 @@ interface ApiService {
     @GET("movie/{movieId}/reviews")
     suspend fun getMovieReview(
         @Path("movieId") movieId: Int,
-        @Query("api_key") api_key : String,
-        @Query("language") language : String,
+        @Query("api_key") api_key : String = BuildConfig.API_KEY,
+        @Query("language") language : String = "ko-KR",
         @Query("page") page: Int
     ) : Response<MovieReviewModel>
 }

@@ -4,6 +4,7 @@ import androidx.paging.PagingData
 import com.my.mvistudymultimodule.core.base.RequestResult
 import com.my.mvistudymultimodule.core.model.MovieDetailModel
 import com.my.mvistudymultimodule.core.model.MovieModel
+import com.my.mvistudymultimodule.core.model.MovieReviewModel
 import com.my.mvistudymultimodule.data.repository.local.MovieLocalDataSource
 import com.my.mvistudymultimodule.data.repository.remote.MovieRemoteDataSource
 import com.my.mvistudymultimodule.domain.repository.MovieRepository
@@ -98,6 +99,13 @@ class MovieRepositoryImpl @Inject constructor(
 //            throw Exception(it)
             emit(RequestResult.ExceptionError(throwable = it))
         }
+    }
+
+    override suspend fun getMovieReviewPaging(
+        language: String,
+        movieId: Int
+    ): Flow<PagingData<MovieReviewModel.Result>> {
+        return movieRemoteDataSource.getMovieReviewPaging(language, movieId)
     }
 
     override suspend fun saveMovieDetail(movieDetail: MovieDetailModel): Flow<RequestResult<Boolean>> {

@@ -1,7 +1,9 @@
 package com.my.mvistudymultimodule.feature.compose.moviedetail.event
 
+import androidx.paging.PagingData
 import com.my.mvistudymultimodule.core.model.MovieDetailModel
 import com.my.mvistudymultimodule.core.model.MovieModel
+import com.my.mvistudymultimodule.core.model.MovieReviewModel
 
 /**
  * Screen 이벤트
@@ -19,6 +21,10 @@ sealed interface MovieDetailUiEvent {
     data class UpdateMovieDetail(val movieDetail: MovieDetailModel?): MovieDetailUiEvent
     data class UpdateLoading(val isLoading: Boolean) : MovieDetailUiEvent
     data class UpdateSaveState(val isSaveState: Boolean): MovieDetailUiEvent
+}
+
+sealed interface MovieReviewListPagingUiEvent {
+    data class UpdateMovieReviewList(val movieReviewList: PagingData<MovieReviewModel.Result>?) : MovieReviewListPagingUiEvent
 }
 
 //sealed interface MovieDetailErrorUiEvent {
@@ -45,4 +51,5 @@ sealed interface ComposeMovieDetailViewModelEvent {
     class GetMovieDetail(val movieId: Int, val movieInfo: MovieModel.MovieModelResult): ComposeMovieDetailViewModelEvent
     class SaveMovieDetail(val movieDetail: MovieDetailModel): ComposeMovieDetailViewModelEvent
     class DeleteMovieDetail(val movieDetail: MovieDetailModel): ComposeMovieDetailViewModelEvent
+    class GetMovieReview(val movieId: Int): ComposeMovieDetailViewModelEvent
 }
