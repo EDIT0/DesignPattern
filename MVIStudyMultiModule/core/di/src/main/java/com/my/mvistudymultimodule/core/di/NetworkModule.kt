@@ -126,9 +126,9 @@ object NetworkModule {
 //            builder.addInterceptor(loggingInterceptor)
             builder.addNetworkInterceptor(loggingInterceptor) // 네트워크 레벨까지 다 찍히도록 변경
         }
-        builder.connectTimeout(10000L, TimeUnit.SECONDS)
-        builder.readTimeout(10000L, TimeUnit.SECONDS)
-        builder.writeTimeout(10000L, TimeUnit.SECONDS)
+        builder.connectTimeout(30, TimeUnit.SECONDS)
+        builder.readTimeout(30, TimeUnit.SECONDS)
+        builder.writeTimeout(30, TimeUnit.SECONDS)
 //        builder.addInterceptor(setHeader) // 토큰 테스트 하지 않을 때 사용하는 것
         builder.addInterceptor(authInterceptor) // 토큰 테스트 할 때 사용하는 것
 
@@ -199,9 +199,9 @@ object NetworkModule {
 //            builder.addInterceptor(loggingInterceptor)
             builder.addNetworkInterceptor(loggingInterceptor) // 네트워크 레벨까지 다 찍히도록 변경
         }
-        builder.connectTimeout(10000L, TimeUnit.SECONDS)
-        builder.readTimeout(10000L, TimeUnit.SECONDS)
-        builder.writeTimeout(10000L, TimeUnit.SECONDS)
+        builder.connectTimeout(30, TimeUnit.SECONDS)
+        builder.readTimeout(30, TimeUnit.SECONDS)
+        builder.writeTimeout(30, TimeUnit.SECONDS)
         builder.addInterceptor(setHeader)
 
         val okHttpClient = builder.build()

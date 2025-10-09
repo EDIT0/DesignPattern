@@ -8,6 +8,7 @@ import com.my.mvistudymultimodule.core.base.BaseAndroidViewModel
 import com.my.mvistudymultimodule.core.base.RequestResult
 import com.my.mvistudymultimodule.core.model.MovieDetailModel
 import com.my.mvistudymultimodule.core.model.MovieModel
+import com.my.mvistudymultimodule.core.util.DataStoreUtil
 import com.my.mvistudymultimodule.core.util.LogUtil
 import com.my.mvistudymultimodule.domain.usecase.CheckMovieDetailUseCase
 import com.my.mvistudymultimodule.domain.usecase.DeleteMovieDetailUseCase
@@ -296,6 +297,12 @@ class ComposeMovieDetailViewModel @Inject constructor(
                 .collect {
                     LogUtil.i_dev("저장 결과: ${it}")
                     checkMovieDetail(movieDetail, true)
+                    // 내부저장소 datastore 저장
+                    DataStoreUtil.setObject(
+                        context = app.applicationContext,
+                        key = movieDetail.id.toString(),
+                        value = movieDetail
+                    )
                 }
 //        }
     }
@@ -337,6 +344,11 @@ class ComposeMovieDetailViewModel @Inject constructor(
                 .collect {
                     LogUtil.i_dev("삭제 결과: ${it}")
                     checkMovieDetail(movieDetail, false)
+                    // 내부저장소 datastore에서 삭제
+                    DataStoreUtil.remove(
+                        context = app.applicationContext,
+                        key = movieDetail.id.toString(),
+                    )
                 }
 //        }
     }

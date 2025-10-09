@@ -1,14 +1,23 @@
 package com.my.mvistudymultimodule.core.base
 
-sealed class RequestResult<T>(
-    val resultData: T? = null,
-    val code: String? = null,
-    val message: String? = null,
-    val throwable: Throwable? = null
+sealed class RequestResult<out T>(
+    open val resultData: T? = null,
+    open val code: String? = null,
+    open val message: String? = null,
+    open val throwable: Throwable? = null
 ) {
-    class Success<T>(data: T) : RequestResult<T>(data)
-    class Error<T>(code: String, message: String?) : RequestResult<T>(code = code, message = message)
-    class ExceptionError<T>(throwable: Throwable): RequestResult<T>(throwable = throwable)
-//    class ConnectionError<T>(code: String, message: String?) : RequestResult<T>(code = code, message = message)
-    class DataEmpty<T>() : RequestResult<T>()
+    data class Success<T>(override val resultData: T) : RequestResult<T>(resultData = resultData)
+
+    data class Error<T>(
+        override val code: String,
+        override val message: String?
+    ) : RequestResult<T>(code = code, message = message)
+
+    data class ExceptionError<T>(
+        override val throwable: Throwable
+    ) : RequestResult<T>(throwable = throwable)
+
+    data class DataEmpty<T>(
+        override val message: String? = null
+    ) : RequestResult<T>(message = message)
 }
