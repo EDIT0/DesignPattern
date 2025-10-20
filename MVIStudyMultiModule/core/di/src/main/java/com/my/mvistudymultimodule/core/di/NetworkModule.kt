@@ -13,8 +13,11 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
+import okhttp3.Protocol
 import okhttp3.Response
+import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -73,7 +76,7 @@ object NetworkModule {
                     // 다른 스레드에서 이미 갱신했는지 확인
                     if (currentToken == token) {
                         LogUtil.d_dev("토큰 갱신 시작")
-                        val newToken = TestToken.refreshToken()
+//                        val newToken = TestToken.refreshToken()
 
                         // 토큰 리프래시 전용 Retrofit 생성
                         val tokenRefreshRetrofit = tokenRefreshRetrofit()
@@ -87,24 +90,51 @@ object NetworkModule {
                             )
                         }
                         LogUtil.d_dev("토큰 갱신 응답값: ${tokenApiResponse.body()}")
-                        TestToken.saveToken(newToken)
-                        token = newToken
-                        LogUtil.d_dev("토큰 갱신 완료: $newToken")
+
+                        if(tokenApiResponse.isSuccessful) {
+                            // 새로운 토큰 발급 응답 성공
+                            val newToken = tokenApiResponse.body()?.totalPages?.toString()?:"" // 새로 발급된 토큰
+                            TestToken.saveToken(newToken)
+                            token = newToken
+                            LogUtil.d_dev("토큰 갱신 완료: $newToken")
+
+                            val newRequest = requestWithToken.newBuilder()
+                                .header("Authorization", "Bearer ${token}")
+                                .build()
+
+                            response = chain.proceed(newRequest)
+                        } else {
+                            // 새로운 토큰 발급 응답 실패
+                            LogUtil.d_dev("토큰 갱신 실패")
+
+                            runBlocking {
+                                // sessionEvent를 View에서 .collect 한다.
+//                                SessionManager.sessionEvent.emit(SessionEvent.RemoveUserInfo)
+                            }
+
+                            // 요청 취소
+                            chain.call().cancel()
+                            return Response.Builder()
+                                .request(requestWithToken)
+                                .protocol(Protocol.HTTP_1_1)
+                                .code(401)
+                                .message("Unauthorized - Token Refresh Failed")
+                                .body("Unauthorized".toResponseBody("text/plain".toMediaTypeOrNull()))
+                                .build()
+                        }
                     } else {
                         token = currentToken
                         LogUtil.d_dev("다른 스레드에서 이미 갱신됨: $token")
+
+                        val newRequest = requestWithToken.newBuilder()
+                            .header("Authorization", "Bearer ${token}")
+                            .build()
+
+                        response = chain.proceed(newRequest)
                     }
-
-                    // 새로운 토큰으로 재요청
-                    val retryRequest = originalRequest.newBuilder()
-                        .addHeader("Accept", "*/*")
-                        .addHeader("Content-Type", "application/json")
-                        .addHeader("Authorization", "Bearer $token") // 토큰 추가하려고 임의로 넣어둔 것 (원래 필요없음)
-                        .build()
-
-                    LogUtil.d_dev("재요청 Token: $token")
-                    response = chain.proceed(retryRequest)
                 }
+            } else {
+                LogUtil.d_dev("401 아님")
             }
 
             return response
